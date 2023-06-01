@@ -1,2 +1,3 @@
-# proptomia
-my own prop-protection addon
+# Proptomia
+
+A Garry's mod simple prop protection addon
