@@ -17,13 +17,13 @@ end
 local color_gray, color_wblue, color_blue, color_yellow, color_red =
     Color(175, 175, 175), Color(150, 150, 255), Color(100, 100, 255), Color(255, 255, 100), Color(255, 100, 100)
 function proptomia.LogInfo(...)
-    MsgC(color_wblue, "Proptomia | ", color_gray, "[", color_blue, " INFO ", color_gray, "]\t", color_white, concat(...))
+    MsgC(color_wblue, "Proptomia ", color_gray, "[", color_blue, " INFO ", color_gray, "]\t", color_white, concat(...))
 end
 function proptomia.LogWarn(...)
-    MsgC(color_wblue, "Proptomia | ", color_gray, "[", color_yellow, " WARN ", color_gray, "]\t", color_white, concat(...))
+    MsgC(color_wblue, "Proptomia ", color_gray, "[", color_yellow, " WARN ", color_gray, "]\t", color_white, concat(...))
 end
 function proptomia.LogError(...)
-    MsgC(color_wblue, "Proptomia | ", color_gray, "[", color_red, " ERROR ", color_gray, "]\t", color_white, concat(...))
+    MsgC(color_wblue, "Proptomia ", color_gray, "[", color_red, " ERROR ", color_gray, "]\t", color_white, concat(...))
     debug.Trace()
 end
 

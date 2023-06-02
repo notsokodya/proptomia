@@ -5,7 +5,7 @@ proptomia.OwnershipQueue = {}
 local ownership_update = function()
     if not table.IsEmpty(proptomia.OwnershipQueue) then
         net.Start "proptomia_ownership"
-            net.WriteUInt(#proptomia.OwnershipQueue, 13)
+            net.WriteUInt(table.Count(proptomia.OwnershipQueue), 13)
 
             for k, v in next, proptomia.OwnershipQueue do
                 net.WriteUInt(k, 16)
@@ -25,6 +25,7 @@ function proptomia.NetworkOwnership(entIndex)
     end
 
     proptomia.OwnershipQueue[entIndex] = proptomia.props[entIndex]
+    PrintTable(proptomia.props[entIndex])
 end
 
 function proptomia.GetOwner(ent)
@@ -54,7 +55,7 @@ function proptomia.SetOwner(ent, ply)
 
     local current_owner = proptomia.GetOwner(ent)
     if current_owner and (current_owner.SteamID ~= "O" and current_owner.SteamID ~= ply:SteamID()) then
-        proptomia.LogError("SetOwner", "Changing owner not supported: ", current_owner or "nil", " -> ", ply or "ply", " for ", ent or "ent")
+        proptomia.LogError("SetOwner", "Changing owner not supported: ", current_owner.SteamID or "nil", " -> ", ply or "ply", " for ", ent or "ent")
         return false
     end
 
@@ -149,11 +150,27 @@ hook.Add("PlayerInitialSpawn", "proptomia_assign_props", function(ply)
     end)
 end)
 
-
+local ignore_list = {
+    ["predicted_viewmodel"] = true,
+    ["player_manager"] = true,
+    ["phys_bone_follower"] = true,
+    ["bodyqueue"] = true,
+    ["gmod_hands"] = true,
+    ["bodyque"] = true,
+    ["beam"] = true,
+    ["physgun_beam"] = true,
+    ["player_pickup"] = true,
+    ["env_sprite"] = true,
+    ["env_sporeexplosion"] = true,
+    ["env_spritetrail"] = true,
+    ["env_rockettrail"] = true,
+    ["worldspawn"] = true,
+    ["phys_lengthconstraint"] = true -- for some reason has same id as worldspawn
+}
 local function entSpawn(ply, ent, ent2)
     if isstring(ent) then ent = ent2 end
     if not IsValid(ent) then ent = ent2 end
-    if IsValid(ent) then
+    if IsValid(ent) and not ignore_list[ent:GetClass()] then
         proptomia.SetOwner(ent, ply)
     end
 end
@@ -200,7 +217,7 @@ if not proptomia.BackupFunctions then
         if CurrentUndo and IsValid(ent) then
             table.insert(CurrentUndo.ents, ent)
         end
-        return undo_Entity(ent)
+        return undo_AddEntity(ent)
     end
     function undo.SetPlayer(ply)
         if CurrentUndo and IsValid(ply) then
@@ -231,11 +248,12 @@ end
 
 hook.Add("OnEntityCreated", "proptomia_ownership", function(ent)
     if not IsValid(ent)
+    or     ent:IsWorld()
     or     ent:IsWeapon()
     or     ent:CPPIGetOwner()
     then return end
 
-    if ent:GetClass() == "predicted_viewmodel" then return end
+    if ignore_list[ent:GetClass()] then return end
 
     local ply = ent:GetOwner()
     if IsValid(ply) and ply:IsPlayer() then
@@ -244,7 +262,17 @@ hook.Add("OnEntityCreated", "proptomia_ownership", function(ent)
         timer.Simple(.1, function()
             if not IsValid(ent) then return end
             if not IsValid(ent:CPPIGetOwner()) then
-                proptomia.SetOwnerWorld(ent)
+                if ent.GetOwner and ent:GetOwner() and ent:GetOwner():IsPlayer() then
+                    proptomia.SetOwner(ent, ent:GetOwner())
+                elseif ent:GetInternalVariable("m_hOwner") or ent:GetSaveTable().m_hOwner then
+                    local owner = ent:GetInternalVariable("m_hOwner") or ent:GetSaveTable().m_hOwner
+
+                    if owner and owner:IsPlayer() then
+                        proptomia.SetOwner(ent, owner)
+                    end
+                else
+                    proptomia.SetOwnerWorld(ent)
+                end
             end
         end)
     end
