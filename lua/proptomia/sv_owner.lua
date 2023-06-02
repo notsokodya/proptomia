@@ -19,7 +19,7 @@ local ownership_update = function()
     proptomia.OwnershipQueue = {}
     hook.Remove("Think", "ProptomiaUpdate")
 end
-function proptomia.NetworkOwnership(ent)
+function proptomia.NetworkOwnership(entIndex)
     if not hook.GetTable().Think.ProptomiaUpdate then
         hook.Add("Think", "ProptomiaUpdate", ownership_update)
     end
@@ -27,6 +27,17 @@ function proptomia.NetworkOwnership(ent)
     proptomia.OwnershipQueue[entIndex] = proptomia.props[entIndex]
 end
 
+function proptomia.GetOwner(ent)
+	if not IsValid(ent) then 
+		return {
+			Ent = ent,
+			Owner = nil,
+			SteamID = nil,
+			Name = nil
+		}
+	end
+	return proptomia.props[ent:EntIndex()]
+end
 function proptomia.SetOwner(ent, ply)
     if not ent then
         proptomia.LogError("SetOwner", " Missing entity")
@@ -65,8 +76,8 @@ function proptomia.SetOwnerWorld(ent)
     end
 
     local current_owner = proptomia.GetOwner(ent)
-    if current_owner and (current_owner.SteamID ~= "O" and current_owner.SteamID ~= ply:SteamID()) then
-        proptomia.LogError("SetOwnerWorld", "Changing owner not supported: ", current_owner or "nil", " -> ", "world", " for ", ent or "ent")
+    if current_owner and (current_owner.SteamID ~= "O" and current_owner.SteamID ~= "W") then
+        proptomia.LogError("SetOwnerWorld", "Changing owner not supported: ", current_owner.SteamID or "nil", " -> ", "world", " for ", ent or "ent")
         return false
     end
 
@@ -230,7 +241,7 @@ hook.Add("OnEntityCreated", "proptomia_ownership", function(ent)
     if IsValid(ply) and ply:IsPlayer() then
         entSpawn(ply, ent)
     else
-        timer.Simple(0, function()
+        timer.Simple(.1, function()
             if not IsValid(ent) then return end
             if not IsValid(ent:CPPIGetOwner()) then
                 proptomia.SetOwnerWorld(ent)
