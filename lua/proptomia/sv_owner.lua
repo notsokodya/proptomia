@@ -25,7 +25,6 @@ function proptomia.NetworkOwnership(entIndex)
     end
 
     proptomia.OwnershipQueue[entIndex] = proptomia.props[entIndex]
-    PrintTable(proptomia.props[entIndex])
 end
 
 function proptomia.GetOwner(ent)

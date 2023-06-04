@@ -35,3 +35,9 @@ end
 function MetaEntity:CPPISetOwner(ply)
     return proptomia.SetOwner(self, ply)
 end
+function MetaEntity:CPPICanPhysgun(ply)
+    return proptomia.CanPhysgunPickup(ply, self)
+end
+function MetaEntity:CPPICanTool(ply, mode)
+    return proptomia.CanTool(ply, {Entity = self}, mode)
+end

@@ -1,7 +1,7 @@
 proptomia = proptomia or {
     props = {},
     buddies = {},
-    convars = {}
+    convars = {_raw = {}}
 }
 
 local function concat(...)
@@ -27,6 +27,10 @@ function proptomia.LogError(...)
     debug.Trace()
 end
 
+proptomia.convars._raw.enabled = CreateConVar("proptomia_enable", "1", {FCVAR_ARCHIVE, FCVAR_NOTIFY}, "Enable proptomia protection", "0", "1")
+cvars.AddChangeCallback("proptomia_enable", function(_, _, value)
+    proptomia.convar.enable = tonumber(value) ~= 0
+end)
 
 proptomia.LogInfo("Loading files...")
 

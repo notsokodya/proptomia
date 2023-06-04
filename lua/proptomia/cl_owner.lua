@@ -31,3 +31,15 @@ hook.Add("EntityRemoved", "proptomia_ownership", function(ent)
         proptomia.props[entIndex] = nil
     end
 end)
+
+function proptomia.GetOwner(ent)
+	if not IsValid(ent) then 
+		return {
+			Ent = ent,
+			Owner = nil,
+			SteamID = nil,
+			Name = nil
+		}
+	end
+	return proptomia.props[ent:EntIndex()]
+end
