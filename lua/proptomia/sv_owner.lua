@@ -1,27 +1,29 @@
+local net_Start, net_WriteUInt, net_WriteString, net_Broadcast, hook_Add, hook_Remove, hook_GetTable, timer_Simple, IsValid, isstring, table_Count = 
+      net.Start, net.WriteUInt, net.WriteString, net.Broadcast, hook.Add, hook.Remove, hook.GetTable, timer.Simple, IsValid, isstring, table.Count
 util.AddNetworkString "proptomia_ownership"
 
 proptomia.OwnershipQueue = {}
 
 local ownership_update = function()
     if not table.IsEmpty(proptomia.OwnershipQueue) then
-        net.Start "proptomia_ownership"
-            net.WriteUInt(table.Count(proptomia.OwnershipQueue), 13)
+        net_Start "proptomia_ownership"
+            net_WriteUInt(table_Count(proptomia.OwnershipQueue), 13)
 
             for k, v in next, proptomia.OwnershipQueue do
-                net.WriteUInt(k, 16)
-                net.WriteUInt(IsValid(v.Owner) and v.Owner:EntIndex() or 0, 16)
-                net.WriteString(v.Name)
-                net.WriteString(v.SteamID)
+                net_WriteUInt(k, 16)
+                net_WriteUInt(IsValid(v.Owner) and v.Owner:EntIndex() or 0, 16)
+                net_WriteString(v.Name)
+                net_WriteString(v.SteamID)
             end
-        net.Broadcast()
+        net_Broadcast()
     end
 
     proptomia.OwnershipQueue = {}
-    hook.Remove("Think", "ProptomiaUpdate")
+    hook_Remove("Think", "ProptomiaUpdate")
 end
 function proptomia.NetworkOwnership(entIndex)
-    if not hook.GetTable().Think.ProptomiaUpdate then
-        hook.Add("Think", "ProptomiaUpdate", ownership_update)
+    if not hook_GetTable().Think.ProptomiaUpdate then
+        hook_Add("Think", "ProptomiaUpdate", ownership_update)
     end
 
     proptomia.OwnershipQueue[entIndex] = proptomia.props[entIndex]
@@ -141,8 +143,8 @@ function proptomia.PlayerInitialized(ply)
     -- send owners somehow
 end
 
-hook.Add("PlayerInitialSpawn", "proptomia_assign_props", function(ply)
-    timer.Simple(2, function()
+hook_Add("PlayerInitialSpawn", "proptomia_assign_props", function(ply)
+    timer_Simple(2, function()
         if IsValid(ply) then
             proptomia.PlayerInitialized(ply)
         end 
@@ -173,13 +175,13 @@ local function entSpawn(ply, ent, ent2)
         proptomia.SetOwner(ent, ply)
     end
 end
-hook.Add("PlayerSpawnedProp", "proptomia_ownership", entSpawn)
-hook.Add("PlayerSpawnedNPC", "proptomia_ownership", entSpawn)
-hook.Add("PlayerSpawnedEffect", "proptomia_ownership", entSpawn)
-hook.Add("PlayerSpawnedRagdoll", "proptomia_ownership", entSpawn)
-hook.Add("PlayerSpawnedSENT", "proptomia_ownership", entSpawn)
-hook.Add("PlayerSpawnedVehicle", "proptomia_ownership", entSpawn)
-hook.Add("PlayerSpawnedSWEP", "proptomia_ownership", entSpawn)
+hook_Add("PlayerSpawnedProp", "proptomia_ownership", entSpawn)
+hook_Add("PlayerSpawnedNPC", "proptomia_ownership", entSpawn)
+hook_Add("PlayerSpawnedEffect", "proptomia_ownership", entSpawn)
+hook_Add("PlayerSpawnedRagdoll", "proptomia_ownership", entSpawn)
+hook_Add("PlayerSpawnedSENT", "proptomia_ownership", entSpawn)
+hook_Add("PlayerSpawnedVehicle", "proptomia_ownership", entSpawn)
+hook_Add("PlayerSpawnedSWEP", "proptomia_ownership", entSpawn)
 
 if not proptomia.BackupFunctions then
     local PLAYER = FindMetaTable("Player")
@@ -245,7 +247,7 @@ if not proptomia.BackupFunctions then
 
 end
 
-hook.Add("OnEntityCreated", "proptomia_ownership", function(ent)
+hook_Add("OnEntityCreated", "proptomia_ownership", function(ent)
     if not IsValid(ent)
     or     ent:IsWorld()
     or     ent:IsWeapon()
@@ -258,7 +260,7 @@ hook.Add("OnEntityCreated", "proptomia_ownership", function(ent)
     if IsValid(ply) and ply:IsPlayer() then
         entSpawn(ply, ent)
     else
-        timer.Simple(.1, function()
+        timer_Simple(.1, function()
             if not IsValid(ent) then return end
             if not IsValid(ent:CPPIGetOwner()) then
                 if ent.GetOwner and ent:GetOwner() and ent:GetOwner():IsPlayer() then
@@ -281,7 +283,7 @@ end)
 
 function proptomia.OnPropsCleanup()
     local count = 0
-    for k, v in next, ents.GetAll() do
+    for k, v in next, ents_GetAll() do
         local owner = v:CPPIGetOwner()
         if owner and owner:IsWorld() then
             count = count + 1
@@ -295,12 +297,12 @@ function proptomia.OnPropsCleanup()
 end
 
 local shouldset
-hook.Add("PostCleanupMap", "proptomia_cleanup", function()
+hook_Add("PostCleanupMap", "proptomia_cleanup", function()
     proptomia.props = {}
     shouldset = true
 
     if not shouldset then
-        timer.Simple(.5, function()
+        timer_Simple(.5, function()
             proptomia.OnPropsCleanup()
             shouldset = nil
         end)

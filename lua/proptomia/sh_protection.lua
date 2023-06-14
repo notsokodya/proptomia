@@ -2,7 +2,7 @@ function proptomia.CanTouch(ent, ply)
     if not IsValid(ent)
     or not IsValid(ply)
     or not ply:IsPlayer()
-    or not proptomia.convars.enable
+    or not proptomia.convars.enabled:GetBool()
     then return end
 
     local owner = proptomia.GetOwner(ent)
@@ -31,7 +31,7 @@ function proptomia.CanTool(ply, tr, mode, tool, bt)
     if not IsValid(ent)
     or not IsValid(ply)
     or not ply:IsPlayer()
-    or not proptomia.convars.enable
+    or not proptomia.convars.enabled:GetBool()
     then return end
 
     if ent:IsPlayer() then return false end
