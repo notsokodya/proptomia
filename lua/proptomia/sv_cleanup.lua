@@ -46,7 +46,8 @@ local cleanup_format = "Cleanuping %s[%s] props in %d seconds"
 hook_Add("player_disconnect", "proptomia_cleanup_players", function(d)
     if proptomia.convars.cleanup_timer:GetInt() <= 0 then return end
     local steamid = d.networkid
-    if not proptomia.props[steamid] then return end -- prevent attempt cleanup non existing props
+    --if not proptomia.props[steamid] then return end -- prevent attempt cleanup non existing props
+        -- to-do: make working fix lol
     cleanupPlayers[steamid] = true
     proptomia.LogInfo(cleanup_format:format(d.name, steamid, proptomia.convars.cleanup_timer:GetInt()))
     timer_Simple(proptomia.convars.cleanup_timer:GetInt(), function()
