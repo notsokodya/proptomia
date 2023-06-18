@@ -9,7 +9,7 @@ function proptomia.CanTouch(ent, ply)
     if not owner then return end
 
     local owner_SteamID, ply_SteamID = owner.SteamID, ply:SteamID()
-    if owner_SteamID ~= "O" and owner_SteamID ~= ply_SteamID and not proptomia.AreBuddies(owner_SteamID, ply_SteamID) then
+    if owner_SteamID ~= "O" and owner_SteamID ~= ply_SteamID and not proptomia.IsBuddy(owner_SteamID, ply_SteamID) then
         return ply:IsAdmin()
     end
 
