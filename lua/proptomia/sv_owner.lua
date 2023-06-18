@@ -1,5 +1,5 @@
-local net_Start, net_WriteUInt, net_WriteString, net_Broadcast, hook_Add, hook_Remove, hook_GetTable, timer_Simple, IsValid, isstring, table_Count = 
-      net.Start, net.WriteUInt, net.WriteString, net.Broadcast, hook.Add, hook.Remove, hook.GetTable, timer.Simple, IsValid, isstring, table.Count
+local net_Start, net_WriteUInt, net_WriteString, net_Broadcast, hook_Add, hook_Remove, hook_GetTable, timer_Simple, IsValid, isstring, table_Count, ents_GetAll = 
+      net.Start, net.WriteUInt, net.WriteString, net.Broadcast, hook.Add, hook.Remove, hook.GetTable, timer.Simple, IsValid, isstring, table.Count, ents.GetAll
 util.AddNetworkString "proptomia_ownership"
 
 proptomia.OwnershipQueue = {}
@@ -125,7 +125,7 @@ end
 
 hook.Add("EntityRemoved", "proptomia_owner", proptomia.RemoveOwner)
 
-
+local assign_info_format = "%s[%s] assigned %d entities"
 function proptomia.PlayerInitialized(ply)
     local steamid = ply:SteamID()
     local count = 0
@@ -138,6 +138,7 @@ function proptomia.PlayerInitialized(ply)
 
     if count > 0 then
         ply:ChatPrint("Assigned " .. count .. " props to you!")
+        proptomia.LogInfo(assign_info_format:format(ply:Name(), ply:SteamID(), count))
     end
 
     -- send owners somehow
@@ -263,12 +264,12 @@ hook_Add("OnEntityCreated", "proptomia_ownership", function(ent)
         timer_Simple(.1, function()
             if not IsValid(ent) then return end
             if not IsValid(ent:CPPIGetOwner()) then
-                if ent.GetOwner and ent:GetOwner() and ent:GetOwner():IsPlayer() then
+                if ent.GetOwner and ent:GetOwner() and ent:GetOwner():IsPlayer() then -- hacks
                     proptomia.SetOwner(ent, ent:GetOwner())
-                elseif ent:GetInternalVariable("m_hOwner") or ent:GetSaveTable().m_hOwner then
+                elseif ent:GetInternalVariable("m_hOwner") or ent:GetSaveTable().m_hOwner then -- more hacks
                     local owner = ent:GetInternalVariable("m_hOwner") or ent:GetSaveTable().m_hOwner
 
-                    if owner and owner:IsPlayer() then
+                    if owner and owner:IsPlayer() then -- hacky hack
                         proptomia.SetOwner(ent, owner)
                     end
                 else
@@ -284,6 +285,7 @@ end)
 function proptomia.OnPropsCleanup()
     local count = 0
     for k, v in next, ents_GetAll() do
+        if v:IsWorld() then continue end
         local owner = v:CPPIGetOwner()
         if owner and owner:IsWorld() then
             count = count + 1
@@ -299,9 +301,9 @@ end
 local shouldset
 hook_Add("PostCleanupMap", "proptomia_cleanup", function()
     proptomia.props = {}
-    shouldset = true
 
     if not shouldset then
+        shouldset = true
         timer_Simple(.5, function()
             proptomia.OnPropsCleanup()
             shouldset = nil
