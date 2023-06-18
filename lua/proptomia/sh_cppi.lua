@@ -1,7 +1,7 @@
 local _cppi = CPPI
 
 if _cppi and _cppi.GetName() ~= "Proptomia" then
-    proptomia.Warn("Detected different prop protection addon!\n\tProptomia will conflict with it, please remove on of them to pervent conflicts")
+    proptomia.Warn("Detected different prop protection addon!\n\tPlease remove it to prevent conflicts")
     proptomia.Warn("\tDetected prop protection addon: " .. _cppi.GetName())
 end
 
