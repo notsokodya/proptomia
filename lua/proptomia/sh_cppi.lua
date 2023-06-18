@@ -6,7 +6,7 @@ if _cppi and _cppi.GetName() ~= "Proptomia" then
 end
 
 local MetaEntity = FindMetaTable("Entity")
-local MetaPalyer = FindMetaTable("Player")
+local MetaPlayer = FindMetaTable("Player")
 
 CPPI = CPPI or {}
 
