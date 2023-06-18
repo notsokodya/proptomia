@@ -5,15 +5,15 @@ proptomia.convars.cleanup_timer = CreateConVar("proptomia_cleanup", "60", {FCVAR
 
 local cleanupEntity = {}
 local function ThinkCleanup()
-    local key, value = next(cleanupEntityList)
+    local key, value = next(cleanupEntity)
     
     if IsValid(value.ent) then
         value.ent:Remove()
     end
-    cleanupEntityList[key] = nil
+    cleanupEntity[key] = nil
     proptomia.props[value.id] = nil
     
-    local isEmpty = next(cleanupEntityList)
+    local isEmpty = next(cleanupEntity)
     if not isEmpty then
         hook_Remove("Think", "proptomia_cleanup_props")
     end
@@ -24,7 +24,7 @@ function proptomia.CleanupProps(steamid)
     for k, v in next, proptomia.props do
         if v.SteamID ~= steamid then continue end
 
-        table_insert({
+        table_insert(cleanupEntity, {
             id = k,
             ent = v.Ent
         })
@@ -42,18 +42,21 @@ local cleanupPlayers = {}
 gameevent_Listen "player_disconnect"
 gameevent_Listen "player_connect"
 
+local cleanup_format = "Cleanuping %s[%s] props in %d seconds"
 hook_Add("player_disconnect", "proptomia_cleanup_players", function(d)
-    if not proptomia.convars.cleanup_time:GetInt() <= 0 then return end
+    if proptomia.convars.cleanup_timer:GetInt() <= 0 then return end
     local steamid = d.networkid
+    if not proptomia.props[steamid] then return end -- prevent attempt cleanup non existing props
     cleanupPlayers[steamid] = true
-    timer_Simple(proptomia.convars.cleanupTime, function()
+    proptomia.LogInfo(cleanup_format:format(d.name, steamid, proptomia.convars.cleanup_timer:GetInt()))
+    timer_Simple(proptomia.convars.cleanup_timer:GetInt(), function()
         if cleanupPlayers[steamid] then
             proptomia.CleanupProps(steamid)
         end
     end)
 end)
 hook_Add("player_connect", "proptomia_cleanup_clear_players", function(d)
-    if not proptomia.convars.cleanup_time:GetInt() <= 0 then return end
+    if proptomia.convars.cleanup_timer:GetInt() <= 0 then return end
     local steamid = d.networkid
     if cleanupPlayers[steamid] then
         cleanupPlayers[steamid] = nil
