@@ -1,5 +1,5 @@
-local   surface_SetFont, surface_SetTextColor, surface_SetTextPos, surface_GetTextSize, surface_DrawText =
-        surface.SetFont, surface.SetTextColor, surface.SetTextPos, surface.GetTextSize, surface.DrawText
+local   surface_SetFont, surface_SetTextColor, surface_SetTextPos, surface_GetTextSize, surface_DrawText, player_GetCount, player_GetAll, vgui_Create, vgui_CreateFromTable, LocalPlayer =
+        surface.SetFont, surface.SetTextColor, surface.SetTextPos, surface.GetTextSize, surface.DrawText, player.GetCount, player.GetAll, vgui.Create, vgui.CreateFromTable, LocalPlayer
 proptomia.convars.displayOwner = CreateClientConVar("proptomia_hud", "1", true, false, "Displays owner of currently aimed entity")
 
 local color_green, color_red, color_bg = Color(100, 255, 100), Color(255, 100, 100), Color(15, 15, 18, 140)
@@ -39,24 +39,24 @@ function PlayerPanel:Init()
     self:DockMargin(0, 0, 0, 2)
     self:SetTall(16)
 
-    self.Avatar = vgui.Create("AvatarImage", self)
+    self.Avatar = vgui_Create("AvatarImage", self)
     self.Avatar:Dock(LEFT)
     self.Avatar:SetSize(16, 16)
     self.Avatar:DockMargin(0, 0, 5, 0)
 
-    self.PName = vgui.Create("DLabel", self)
+    self.PName = vgui_Create("DLabel", self)
     self.PName:SetTextColor(Color(0, 0, 0, 255))
     self.PName:Dock(LEFT)
     self.PName:DockMargin(0, 0, 5, 0)
     self.PName:SetText("Unknown")
 
-    self.PSteamID = vgui.Create("DLabel", self)
+    self.PSteamID = vgui_Create("DLabel", self)
     self.PSteamID:SetTextColor(Color(0, 0, 0, 255))
     self.PSteamID:Dock(FILL)
     self.PSteamID:DockMargin(0, 0, 5, 0)
     self.PSteamID:SetText("Unknown")
 
-    self.SetBuddy = vgui.Create("DCheckBox", self)
+    self.SetBuddy = vgui_Create("DCheckBox", self)
     self.SetBuddy:Dock(RIGHT)
     self.SetBuddy.OnChange = function(self, val)
         local parent = self:GetParent()
@@ -90,11 +90,21 @@ local function updateBuddiesList(panel, force)
 
     current:GetCanvas():Clear()
 
-    for k, v in next, player.GetAll() do
-        local pnl = vgui.CreateFromTable(PlayerPanel)
-        pnl:SetPlayer(v)
-        pnl:SetPanelReference(panel)
-        current:AddItem(pnl)
+    if player_GetCount() - 1 <= 0 then
+        local text = vgui_Create("DLabel")
+        text:Dock(TOP)
+        text:SetText("Currently no players on server :(")
+        text:SetFont("DermaDefaultBold")
+        current:AddItem(text)
+    else
+        local lp = LocalPlayer()
+        for k, v in next, player_GetAll() do
+            if v == lp then continue end
+            local pnl = vgui_CreateFromTable(PlayerPanel)
+            pnl:SetPlayer(v)
+            pnl:SetPanelReference(panel)
+            current:AddItem(pnl)
+        end
     end
     current:Rebuild()
 end
@@ -107,13 +117,14 @@ hook.Add("PopulateToolMenu", "proptomia_menu", function()
         panel:Clear()
         panel:SetName("Proptomia > Buddies")
         
-        local txt = panel:Help("[ Players ]")
+        local txt = panel:Help("[ Buddies Menu ]")
+        txt:Dock(TOP)
         txt:SetContentAlignment(TEXT_ALIGN_CENTER)
         txt:SetFont("DermaDefaultBold")
 
         local txt = panel:Help("Here you can allow other players touch your props")
 
-        local list = vgui.Create("DScrollPanel")
+        local list = vgui_Create("DScrollPanel")
         list:SetTall(256)
         list:Dock(FILL)
         list:DockMargin(2, 5, 2, 5)
