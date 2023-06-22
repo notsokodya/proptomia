@@ -6,6 +6,7 @@ proptomia.convars.cleanup_timer = CreateConVar("proptomia_cleanup", "60", {FCVAR
 local cleanupEntity = {}
 local function ThinkCleanup()
     local key, value = next(cleanupEntity)
+    if not key then hook_Remove("Think", "proptomia_cleanup_props") return end
     
     if IsValid(value.ent) then
         value.ent:Remove()
@@ -31,6 +32,7 @@ function proptomia.CleanupProps(steamid)
         count = count + 1
     end
 
+    proptomia.OwnershipCount[steamid] = nil
     if not hook_GetTable().Think.proptomia_cleanup_props then
         hook_Add("Think", "proptomia_cleanup_props", ThinkCleanup)
     end
@@ -46,8 +48,8 @@ local cleanup_format = "Cleanuping %s[%s] props in %d seconds"
 hook_Add("player_disconnect", "proptomia_cleanup_players", function(d)
     if proptomia.convars.cleanup_timer:GetInt() <= 0 then return end
     local steamid = d.networkid
-    --if not proptomia.props[steamid] then return end -- prevent attempt cleanup non existing props
-        -- to-do: make working fix lol
+    if not proptomia.OwnershipCount[steamid] or proptomia.OwnershipCount[steamid] <= 0 then return end
+
     cleanupPlayers[steamid] = true
     proptomia.LogInfo(cleanup_format:format(d.name, steamid, proptomia.convars.cleanup_timer:GetInt()))
     timer_Simple(proptomia.convars.cleanup_timer:GetInt(), function()

@@ -3,6 +3,7 @@ local net_Start, net_WriteUInt, net_WriteString, net_Broadcast, hook_Add, hook_R
 util.AddNetworkString "proptomia_ownership"
 
 proptomia.OwnershipQueue = {}
+proptomia.OwnershipCount = {}
 
 local ownership_update = function()
     if not table.IsEmpty(proptomia.OwnershipQueue) then
@@ -68,6 +69,7 @@ function proptomia.SetOwner(ent, ply)
         Name = ply:Name()
     }
     proptomia.NetworkOwnership(entIndex)
+    proptomia.OwnershipCount[ply:SteamID()] = proptomia.OwnershipCount[ply:SteamID()] and proptomia.OwnershipCount[ply:SteamID()] + 1 or 0
 
     return true
 end
@@ -117,6 +119,11 @@ function proptomia.RemoveOwner(ent)
         return false
     end
 
+    local owner = proptomia.props[ent:EntIndex()]
+    if owner then
+        proptomia.OwnershipCount[owner.SteamID] = proptomia.OwnershipCount[owner.SteamID] and proptomia.OwnershipCount[owner.SteamID] - 1 or 0
+    end
+
     proptomia.props[ent:EntIndex()] = nil
     -- proptomia.NetworkOwnership(entIndex) (?)
 
@@ -138,6 +145,7 @@ function proptomia.PlayerInitialized(ply)
 
     if count > 0 then
         ply:ChatPrint("Assigned " .. count .. " props to you!")
+        proptomia.OwnershipCount[steamid] = count
         proptomia.LogInfo(assign_info_format:format(ply:Name(), ply:SteamID(), count))
     end
 
@@ -294,6 +302,7 @@ function proptomia.OnPropsCleanup()
             count = count + 1
         end
     end
+    proptomia.OwnershipCount = {}
 
     proptomia.LogInfo("Total amount of world entities: " .. count)
 end

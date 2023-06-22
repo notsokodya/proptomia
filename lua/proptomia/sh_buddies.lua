@@ -20,7 +20,7 @@ if SERVER then
             local active_players = {}
             for k, v in next, player.GetAll() do
                 if proptomia.buddies[steamid][v:SteamID()] then
-                    table.insert(active_players)
+                    table.insert(active_players, v)
                 end
             end
 
@@ -167,6 +167,12 @@ if CLIENT then
             sql.Query("INSERT INTO proptomia_buddies (SteamID, Name) VALUES(" .. sql.SQLStr(steamid) .. ", " .. sql.SQLStr(name or steamid) .. ");")
         end
         table.insert(buddies_change.a, steamid)
+
+        local lsteamid = LocalPlayer():SteamID()
+        if not proptomia.buddies[lsteamid] then proptomia.buddies[lsteamid] = {} end
+        proptomia.buddies[lsteamid][steamid] = true
+        proptomia.buddiesClient[steamid] = name or steamid
+
         if not hook.GetTable().Think.proptomia_buddies_change then hook.Add("Think", "proptomia_buddies_change", SendChanges) end
         return true
     end
@@ -175,6 +181,12 @@ if CLIENT then
         if exist then
             sql.Query("DELETE FROM proptomia_buddies WHERE SteamID = " .. sql.SQLStr(steamid) .. ";")
             table.insert(buddies_change.r, steamid)
+
+            local lsteamid = LocalPlayer():SteamID()
+            if not proptomia.buddies[lsteamid] then proptomia.buddies[lsteamid] = {} end
+            proptomia.buddies[lsteamid][steamid] = nil
+            proptomia.buddiesClient[steamid] = nil
+            
             if not hook.GetTable().Think.proptomia_buddies_change then hook.Add("Think", "proptomia_buddies_change", SendChanges) end
             return true
         else
