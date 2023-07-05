@@ -1,18 +1,26 @@
 local   surface_SetFont, surface_SetTextColor, surface_SetTextPos, surface_GetTextSize, surface_DrawText, player_GetCount, player_GetAll, vgui_Create, vgui_CreateFromTable, LocalPlayer =
         surface.SetFont, surface.SetTextColor, surface.SetTextPos, surface.GetTextSize, surface.DrawText, player.GetCount, player.GetAll, vgui.Create, vgui.CreateFromTable, LocalPlayer
-proptomia.convars.displayOwner = CreateClientConVar("proptomia_hud", "1", true, false, "Displays owner of currently aimed entity")
+proptomia.convars.displayOwner = CreateClientConVar("proptomia_display_owner", "1", true, false, "Toggle displaying aimed entity owner name")
 
 local color_green, color_red, color_bg = Color(100, 255, 100), Color(255, 100, 100), Color(15, 15, 18, 140)
+local actions = {
+    weapon_physgun = 1,
+    gmod_tool = 2
+}
 hook.Add("HUDPaint", "proptomia_display_owner", function()
     if not proptomia.convars.displayOwner:GetBool() then return end
 
     local me = LocalPlayer()
     local ent = me:GetEyeTrace().Entity
     if IsValid(ent) then
+        local wep = me:GetActiveWeapon()
+        local wep_class = IsValid(wep) and wep:GetClass() or ""
+        local action = actions[wep_class]
+
         local owner = ent:CPPIGetOwner()
         if IsValid(owner) then
             local w, h = ScrW(), ScrH()
-            local text_color = proptomia.CanTouch(ent, me) and color_green or color_red
+            local text_color = proptomia.CanTouch(ent, me, action) and color_green or color_red
             local text = owner:Name()
 
             surface_SetFont("ChatFont")
@@ -34,15 +42,19 @@ end)
 
 
 local PlayerPanel = {}
+local icon_access, icon_noaccess = "icon16/tick.png", "icon16/cross.png"
 function PlayerPanel:Init()
     self:Dock(TOP)
     self:DockMargin(0, 0, 0, 2)
-    self:SetTall(16)
+    self:DockPadding(5, 5, 5, 5)
+    self:SetTall(25)
+    self:SetMouseInputEnabled(true)
 
     self.Avatar = vgui_Create("AvatarImage", self)
     self.Avatar:Dock(LEFT)
     self.Avatar:SetSize(16, 16)
     self.Avatar:DockMargin(0, 0, 5, 0)
+    self.Avatar.OnMouseReleased = function(self, code) self:GetParent():OnMouseReleased(code) end
 
     self.PName = vgui_Create("DLabel", self)
     self.PName:SetTextColor(Color(0, 0, 0, 255))
@@ -50,34 +62,115 @@ function PlayerPanel:Init()
     self.PName:DockMargin(0, 0, 5, 0)
     self.PName:SetText("Unknown")
 
-    self.PSteamID = vgui_Create("DLabel", self)
-    self.PSteamID:SetTextColor(Color(0, 0, 0, 255))
-    self.PSteamID:Dock(FILL)
-    self.PSteamID:DockMargin(0, 0, 5, 0)
-    self.PSteamID:SetText("Unknown")
+    self.BuddyProperties = vgui_Create("DImage", self)
+    self.BuddyProperties:SetMouseInputEnabled(true)
+    self.BuddyProperties:SetImage("icon16/brick.png")
+    self.BuddyProperties:SetTooltip("Using properties menu")
+    self.BuddyProperties:SetTooltipDelay(0.2)
+    self.BuddyProperties:Dock(RIGHT)
+    self.BuddyProperties:SetSize(16, 16)
+    self.BuddyProperties:DockMargin(1, 0, 5, 0)
+    self.BuddyProperties.OnMouseReleased = function(self, code) self:GetParent():OnMouseReleased(code) end
 
-    self.SetBuddy = vgui_Create("DCheckBox", self)
-    self.SetBuddy:Dock(RIGHT)
-    self.SetBuddy.OnChange = function(self, val)
-        local parent = self:GetParent()
-        parent.IsBuddy = val
-        if val then
-            proptomia.AddBuddy(parent.SteamID, parent.Name)
-        else
-            proptomia.RemoveBuddy(parent.SteamID)
-        end
+    self.BuddyToolgun = vgui_Create("DImage", self)
+    self.BuddyToolgun:SetMouseInputEnabled(true)
+    self.BuddyToolgun:SetImage("icon16/brick.png")
+    self.BuddyToolgun:SetTooltip("Toolgun use")
+    self.BuddyToolgun:SetTooltipDelay(0.2)
+    self.BuddyToolgun:Dock(RIGHT)
+    self.BuddyToolgun:SetSize(16, 16)
+    self.BuddyToolgun:DockMargin(1, 0, 1, 0)
+    self.BuddyToolgun.OnMouseReleased = function(self, code) self:GetParent():OnMouseReleased(code) end
+
+    self.BuddyPhysgun = vgui_Create("DImage", self)
+    self.BuddyPhysgun:SetMouseInputEnabled(true)
+    self.BuddyPhysgun:SetImage("icon16/brick.png")
+    self.BuddyPhysgun:SetTooltip("Physgun touching")
+    self.BuddyPhysgun:SetTooltipDelay(0.2)
+    self.BuddyPhysgun:Dock(RIGHT)
+    self.BuddyPhysgun:SetSize(16, 16)
+    self.BuddyPhysgun:DockMargin(0, 0, 1, 0)
+    self.BuddyPhysgun.OnMouseReleased = function(self, code) self:GetParent():OnMouseReleased(code) end
+end
+function PlayerPanel:Paint(w, h)
+    if self:IsHovered() or self:IsChildHovered() then
+        self:GetSkin().tex.MenuBG_Hover(0, 0, w, h)
+    end
+end
+function PlayerPanel:OnMouseReleased(code)
+    if code ~= MOUSE_LEFT and code ~= MOUSE_RIGHT then return end
+    local access = self.BuddyAccess
+    local panel = DermaMenu()
+    local base = self
+
+    local physButton = panel:AddOption("Physgun")
+    physButton.BuddyChecked = access.phys
+    physButton:SetIcon(access.phys and icon_access or icon_noaccess)
+    function physButton:OnMouseReleased(code)
+        DButton.OnMouseReleased(self, code)
+        if self.m_MenuClicking and code == MOUSE_LEFT then self.m_MenuClicking = false end
+    end
+    function physButton:DoClick()
+        self.BuddyChecked = not self.BuddyChecked
+        access.phys = self.BuddyChecked
+        physButton:SetIcon(access.phys and icon_access or icon_noaccess)
+        base:UpdateAccess()
+    end
+
+    local toolButton = panel:AddOption("Toolgun")
+    toolButton.BuddyChecked = access.tool
+    toolButton:SetIcon(access.tool and icon_access or icon_noaccess)
+    function toolButton:OnMouseReleased(code)
+        DButton.OnMouseReleased(self, code)
+        if self.m_MenuClicking and code == MOUSE_LEFT then self.m_MenuClicking = false end
+    end
+    function toolButton:DoClick()
+        self.BuddyChecked = not self.BuddyChecked
+        access.tool = self.BuddyChecked
+        toolButton:SetIcon(access.tool and icon_access or icon_noaccess)
+        base:UpdateAccess()
+    end
+
+    local propButton = panel:AddOption("Properties")
+    propButton.BuddyChecked = access.prop
+    propButton:SetIcon(access.prop and icon_access or icon_noaccess)
+    function propButton:OnMouseReleased(code)
+        DButton.OnMouseReleased(self, code)
+        if self.m_MenuClicking and code == MOUSE_LEFT then self.m_MenuClicking = false end
+    end
+    function propButton:DoClick()
+        self.BuddyChecked = not self.BuddyChecked
+        access.prop = self.BuddyChecked
+        propButton:SetIcon(access.prop and icon_access or icon_noaccess)
+        base:UpdateAccess()
+    end
+
+    panel:Open()
+end
+function PlayerPanel:UpdateAccess()
+    if self.BuddyAccess then
+        self.BuddyPhysgun:SetImage(self.BuddyAccess.phys and icon_access or icon_noaccess)
+        self.BuddyToolgun:SetImage(self.BuddyAccess.tool and icon_access or icon_noaccess)
+        self.BuddyProperties:SetImage(self.BuddyAccess.prop and icon_access or icon_noaccess)
+        proptomia.AddBuddy(self.SteamID, self.Name, self.BuddyAccess.phys, self.BuddyAccess.tool, self.BuddyAccess.prop)
     end
 end
 function PlayerPanel:SetPlayer(ply, name, steamid)
+    name = ply and ply:Name() or name or steamid
+    steamid = ply and ply:SteamID() or steamid
+
+    local buddyAccess = proptomia.buddiesClient[steamid]
+
     self.Player = ply
-    self.SteamID = ply and ply:SteamID() or steamid
-    self.Name = ply and ply:Name() or name or steamid
-    self.IsBuddy = proptomia.buddiesClient[self.SteamID] ~= nil
+    self.SteamID = steamid
+    self.Name = name
+    self.BuddyAccess = buddyAccess and {phys = buddyAccess.phys, tool = buddyAccess.tool, prop = buddyAccess.prop} or {phys = false, tool = false, prop = false}
 
     self.Avatar:SetSteamID(util.SteamIDTo64(self.SteamID), 16)
     self.PName:SetText(self.Name)
-    self.PSteamID:SetText(self.SteamID)
-    self.SetBuddy:SetValue(self.IsBuddy)
+    self.BuddyPhysgun:SetImage(self.BuddyAccess.phys and icon_access or icon_noaccess)
+    self.BuddyToolgun:SetImage(self.BuddyAccess.tool and icon_access or icon_noaccess)
+    self.BuddyProperties:SetImage(self.BuddyAccess.prop and icon_access or icon_noaccess)
 end
 function PlayerPanel:SetPanelReference(panel)
     self.ParentPanel = panel
@@ -90,7 +183,7 @@ local function updateBuddiesList(panel, force)
 
     current:GetCanvas():Clear()
 
-    if player_GetCount() - 1 <= 0 then
+    if player_GetCount() <= 1 then
         local text = vgui_Create("DLabel")
         text:Dock(TOP)
         text:SetText("Currently no players on server :(")
@@ -136,7 +229,7 @@ hook.Add("PopulateToolMenu", "proptomia_menu", function()
     end)
 end)
 hook.Add("SpawnMenuOpen", "proptomia_update_buddies_list", function()
-    if IsValid(proptomia.BuddiesPanel) then
+    if IsValid(proptomia.BuddiesPanel) and proptomia.BuddiesPanel:IsVisible()  then
         updateBuddiesList(proptomia.BuddiesPanel)
     end
 end)

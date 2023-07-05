@@ -1,7 +1,7 @@
 local hook_Add, hook_Remove, hook_GetTable, table_insert, gameevent_Listen, timer_Simple, next =
       hook.Add, hook.Remove, hook.GetTable, table.insert, gameevent.Listen, timer.Simple, next
 
-proptomia.convars.cleanup_timer = CreateConVar("proptomia_cleanup", "60", {FCVAR_ARCHIVE, FCVAR_NOTIFY}, "Time before cleanup player's props")
+proptomia.convars.cleanup_timer = CreateConVar("proptomia_cleanup", "60", {FCVAR_ARCHIVE, FCVAR_NOTIFY}, "Set seconds before disconnected player's props will be removed. Setting 0 or lower value disables cleanup.")
 
 local cleanupEntity = {}
 local function ThinkCleanup()
@@ -55,6 +55,7 @@ hook_Add("player_disconnect", "proptomia_cleanup_players", function(d)
     timer_Simple(proptomia.convars.cleanup_timer:GetInt(), function()
         if cleanupPlayers[steamid] then
             proptomia.CleanupProps(steamid)
+            cleanupPlayers[steamid] = nil
         end
     end)
 end)
@@ -65,3 +66,13 @@ hook_Add("player_connect", "proptomia_cleanup_clear_players", function(d)
         cleanupPlayers[steamid] = nil
     end
 end)
+
+
+concommand.Add("proptomia_cleanup_disconnected", function(ply)
+    if IsValid(ply) and not ply:IsAdmin() then return end
+    proptomia.LogInfo((IsValid(ply) and ply:Nick() or "Console") .. " removed all disconnected players' props")
+    for k, v in next, cleanupPlayers do
+        proptomia.CleanupProps(steamid)
+        cleanupPlayers[k] = nil
+    end
+end, nil, "Remove all disconnected players' props (admin only)")

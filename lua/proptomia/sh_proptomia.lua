@@ -27,8 +27,6 @@ function proptomia.LogError(...)
     debug.Trace()
 end
 
-proptomia.convars.enabled = CreateConVar("proptomia_enable", "1", {FCVAR_ARCHIVE, FCVAR_NOTIFY}, "Enable proptomia protection", "0", "1")
-
 proptomia.LogInfo("Loading files...")
 
 
