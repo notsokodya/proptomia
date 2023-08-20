@@ -149,6 +149,7 @@ function proptomia.PlayerInitialized(ply)
         proptomia.LogInfo(assign_info_format:format(ply:Name(), ply:SteamID(), count))
     end
 
+    proptomia.buddies[steamid] = {}
     -- send owners somehow
 end
 
