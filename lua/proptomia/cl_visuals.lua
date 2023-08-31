@@ -47,18 +47,18 @@ function PlayerPanel:Init()
     self:Dock(TOP)
     self:DockMargin(0, 0, 0, 2)
     self:DockPadding(5, 5, 5, 5)
-    self:SetTall(25)
+    self:SetTall(32)
     self:SetMouseInputEnabled(true)
 
     self.Avatar = vgui_Create("AvatarImage", self)
     self.Avatar:Dock(LEFT)
-    self.Avatar:SetSize(16, 16)
+    self.Avatar:SetSize(24, 32)
     self.Avatar:DockMargin(0, 0, 5, 0)
     self.Avatar.OnMouseReleased = function(self, code) self:GetParent():OnMouseReleased(code) end
 
     self.PName = vgui_Create("DLabel", self)
     self.PName:SetTextColor(Color(0, 0, 0, 255))
-    self.PName:Dock(LEFT)
+    self.PName:Dock(FILL)
     self.PName:DockMargin(0, 0, 5, 0)
     self.PName:SetText("Unknown")
 
@@ -69,7 +69,7 @@ function PlayerPanel:Init()
     self.BuddyProperties:SetTooltipDelay(0.2)
     self.BuddyProperties:Dock(RIGHT)
     self.BuddyProperties:SetSize(16, 16)
-    self.BuddyProperties:DockMargin(1, 0, 5, 0)
+    self.BuddyProperties:DockMargin(1, 4, 5, 4)
     self.BuddyProperties.OnMouseReleased = function(self, code) self:GetParent():OnMouseReleased(code) end
 
     self.BuddyToolgun = vgui_Create("DImage", self)
@@ -79,7 +79,7 @@ function PlayerPanel:Init()
     self.BuddyToolgun:SetTooltipDelay(0.2)
     self.BuddyToolgun:Dock(RIGHT)
     self.BuddyToolgun:SetSize(16, 16)
-    self.BuddyToolgun:DockMargin(1, 0, 1, 0)
+    self.BuddyToolgun:DockMargin(1, 4, 1, 4)
     self.BuddyToolgun.OnMouseReleased = function(self, code) self:GetParent():OnMouseReleased(code) end
 
     self.BuddyPhysgun = vgui_Create("DImage", self)
@@ -89,7 +89,7 @@ function PlayerPanel:Init()
     self.BuddyPhysgun:SetTooltipDelay(0.2)
     self.BuddyPhysgun:Dock(RIGHT)
     self.BuddyPhysgun:SetSize(16, 16)
-    self.BuddyPhysgun:DockMargin(0, 0, 1, 0)
+    self.BuddyPhysgun:DockMargin(0, 4, 1, 4)
     self.BuddyPhysgun.OnMouseReleased = function(self, code) self:GetParent():OnMouseReleased(code) end
 end
 function PlayerPanel:Paint(w, h)

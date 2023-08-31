@@ -2,8 +2,8 @@ net.Receive("proptomia_ownership", function()
     local count = net.ReadUInt(13)
 
     for i = 1, count do
-        local ent = net.ReadUInt(16)
-        local owner = net.ReadUInt(16)
+        local ent = net.ReadUInt(13)
+        local owner = net.ReadUInt(13)
         local name = net.ReadString()
         local steamid = net.ReadString()
 

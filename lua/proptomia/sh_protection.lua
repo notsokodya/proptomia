@@ -21,10 +21,16 @@ end
 function proptomia.CanPhysgunPickup(ply, ent)
     return proptomia.CanTouch(ent, ply, 1)
 end
+
 function proptomia.CanPhysgunReload(_, ply)
     if not IsValid(ply) or not ply:IsPlayer() then return end
-    return proptomia.CanTouch(ply:GetEyeTrace().Entity, ply, 1)
+    if proptomia.CanTouch(ply:GetEyeTrace().Entity, ply, 1) == false then return false end
 end
+function proptomia.CanPlayerUnfreeze(ply, ent, physobj)
+    if not IsValid(ply) or not ply:IsPlayer() then return end
+    if proptomia.CanTouch(ent, ply, 1) == false then return false end
+end
+
 function proptomia.CanPhysgunFreeze(wep, obj, ent, ply)
     if proptomia.CanTouch(ent, ply, 1) == false then return false end
 end
@@ -45,6 +51,7 @@ function proptomia.CanTool(ply, tr, mode, tool, bt)
             for k, v in next, tool.Objects do
                 local tent = v.Ent
                 if IsValid(tent) then
+                    print(tent, proptomia.CanTouch(tent, ply, 2))
                     if proptomia.CanTouch(tent, ply, 2) == false then
                         return false
                     end
@@ -72,6 +79,7 @@ end
  
 hook.Add("PhysgunPickup", "proptomia_protection", proptomia.CanPhysgunPickup)
 hook.Add("OnPhysgunReload", "proptomia_protection", proptomia.CanPhysgunReload)
+hook.Add("CanPlayerUnfreeze", "proptomia_protection", proptomia.CanPlayerUnfreeze)
 hook.Add("OnPhysgunFreeze", "proptomia_protection", proptomia.CanPhysgunFreeze)
 hook.Add("CanTool", "proptomia_protection", proptomia.CanTool)
 hook.Add("CanProperty", "proptomia_protection", proptomia.CanProperty)

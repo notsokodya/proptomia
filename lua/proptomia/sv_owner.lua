@@ -11,8 +11,8 @@ local ownership_update = function()
             net_WriteUInt(table_Count(proptomia.OwnershipQueue), 13)
 
             for k, v in next, proptomia.OwnershipQueue do
-                net_WriteUInt(k, 16)
-                net_WriteUInt(IsValid(v.Owner) and v.Owner:EntIndex() or 0, 16)
+                net_WriteUInt(k, 13)
+                net_WriteUInt(IsValid(v.Owner) and v.Owner:EntIndex() or 0, 13)
                 net_WriteString(v.Name)
                 net_WriteString(v.SteamID)
             end
@@ -132,6 +132,28 @@ end
 
 hook.Add("EntityRemoved", "proptomia_owner", proptomia.RemoveOwner)
 
+function proptomia.SendOwnersTo(ply, except_player_props)
+    local props = proptomia.props
+    if except_player_props then
+        local sid = ply:SteamID()
+        for k, v in next, props do
+            if v.SteamID == sid then props[k] = nil end
+        end
+    end
+
+    if table_Count(props) > 0 then
+        net_Start "proptomia_ownership"
+            net_WriteUInt(table_Count(props), 13)
+
+            for k, v in next, props do -- rip network
+                net_WriteUInt(k, 13)
+                net_WriteUInt(IsValid(v.Owner) and v.Owner:EntIndex() or 0, 13)
+                net_WriteString(v.Name)
+                net_WriteString(v.SteamID)
+            end
+        net_Broadcast()
+    end
+end
 local assign_info_format = "%s[%s] assigned %d entities"
 function proptomia.PlayerInitialized(ply)
     local steamid = ply:SteamID()
@@ -150,7 +172,7 @@ function proptomia.PlayerInitialized(ply)
     end
 
     proptomia.buddies[steamid] = {}
-    -- send owners somehow
+    proptomia.SendOwnersTo(ply, true)
 end
 
 hook_Add("PlayerInitialSpawn", "proptomia_assign_props", function(ply)
