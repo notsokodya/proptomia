@@ -127,7 +127,7 @@ if CLIENT then
                 net.WriteUInt(#buddies, 12)
                 for k, v in next, buddies do
                     local friendSteamID = v.SteamID
-                    local phys, tool, prop = v.PhysGun and true or false, v.ToolGun and true or false, v.Properties and true or false
+                    local phys, tool, prop = v.PhysGun == 1, v.ToolGun == 1, v.Properties == 1
                     proptomia.buddies[steamid][friendSteamID] = {phys, tool, prop}
                     proptomia.buddiesClient[friendSteamID] = {name = v.Name, phys = phys, tool = tool, prop = prop}
                     net.WriteString(friendSteamID)
