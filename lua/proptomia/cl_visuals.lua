@@ -8,7 +8,9 @@ local actions = {
     gmod_tool = 2
 }
 hook.Add("HUDPaint", "proptomia_display_owner", function()
-    if not proptomia.convars.displayOwner:GetBool() then return end
+    if not proptomia.convars.displayOwner:GetBool() 
+    or not proptomia.convars.protection:GetBool()
+    then return end
 
     local me = LocalPlayer()
     local ent = me:GetEyeTrace().Entity
