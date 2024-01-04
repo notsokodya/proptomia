@@ -23,7 +23,7 @@ local ownership_update = function()
     hook_Remove("Think", "ProptomiaUpdate")
 end
 function proptomia.NetworkOwnership(entIndex)
-    if not hook_GetTable().Think.ProptomiaUpdate then
+    if not hook_GetTable().Think or not hook_GetTable().Think.ProptomiaUpdate then
         hook_Add("Think", "ProptomiaUpdate", ownership_update)
     end
 
