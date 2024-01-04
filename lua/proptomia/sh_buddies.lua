@@ -161,10 +161,8 @@ if CLIENT then
             end
             proptomia.buddies[steamid] = {}
             proptomia.buddies[steamid][lp_steamid] = {phys, tool, prop}
-            hook.Run("BuddyAccessChanged", steamid, phys, tool, prop, _phys, _tool, _prop)
         else
             proptomia.buddies[steamid] = nil
-            hook.Run("BuddyAccessChanged", steamid, false, false, false, false, false, false)
         end
     end)
 
