@@ -1,6 +1,7 @@
 local   surface_SetFont, surface_SetTextColor, surface_SetTextPos, surface_GetTextSize, surface_DrawText, player_GetCount, player_GetAll, vgui_Create, vgui_CreateFromTable, LocalPlayer =
         surface.SetFont, surface.SetTextColor, surface.SetTextPos, surface.GetTextSize, surface.DrawText, player.GetCount, player.GetAll, vgui.Create, vgui.CreateFromTable, LocalPlayer
 proptomia.convars.displayOwner = CreateClientConVar("proptomia_display_owner", "1", true, false, "Toggle displaying aimed entity owner name")
+proptomia.convars.buddyNotifications = CreateClientConVar("proptomia_buddy_notifications", "0", true, false, "Toggle displaying notifications when someone gives or takes your access")
 
 local color_green, color_red, color_bg = Color(100, 255, 100), Color(255, 100, 100), Color(15, 15, 18, 140)
 local actions = {
@@ -233,5 +234,46 @@ end)
 hook.Add("SpawnMenuOpen", "proptomia_update_buddies_list", function()
     if IsValid(proptomia.BuddiesPanel) and proptomia.BuddiesPanel:IsVisible()  then
         updateBuddiesList(proptomia.BuddiesPanel)
+    end
+end)
+
+
+local what_access = {
+    [1] = "Physgun",
+    [2] = "ToolGun",
+    [3] = "Properties"
+}
+hook.Add("BuddyAccessChanged", "proptomia_buddy_notifications", function(steamid, phys, tool, prop, _phys, _tool, _prop)
+    if not proptomia.convars.buddyNotifications:GetBool() then return end
+    local a = {phys, tool, prop}
+    local b = {_phys, _tool, _prop}
+
+    local changed = 0
+    for k, v in next, a do
+        if v ~= b[k] then
+            changed = k
+            break
+        end
+    end
+
+    if changed == 0 then
+        for k, v in next, a do
+            if v then changed = -k break end
+        end
+    end
+
+    local player_name = "undefined"
+    for k, v in next, player_GetAll() do
+        if v:SteamID() == steamid then
+            player_name = v:Name()
+            break
+        end
+    end
+
+    if changed ~= 0 then
+        local what = changed < 0 or a[changed] and not b[changed]
+        notification.AddLegacy(player_name .. " " .. (what and "gave you " or "took your ") .. what_access[math.abs(changed)] .. " access", what and 3 or 1, 2)
+    else
+        notification.AddLegacy(player_name .. " removed you from buddies", 1, 2)
     end
 end)
