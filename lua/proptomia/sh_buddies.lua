@@ -25,8 +25,9 @@ if SERVER then
                     net.Start("proptomia_buddies")
                         net.WriteUInt(0, 1)
                         net.WriteString(steamid)
-                        for k, v in next, proptomia.buddies[steamid][ply_sid] do
-                            net.WriteBool(v or false)
+                        for i = 1, 3 do
+                            local access = proptomia.buddies[steamid][ply_sid][i]
+                            net.WriteBool(access or false)
                         end
                     net.Send(v)
                 end
@@ -73,7 +74,7 @@ if SERVER then
             for i = 1, count do
                 local ply_steamid = net.ReadString()
                 proptomia.buddies[steamid][ply_steamid] = nil
-                steamids[ply_steamid] = buddyAccess
+                steamids[ply_steamid] = true
             end
 
             local active_players = {}
@@ -105,7 +106,7 @@ proptomia.BuddyAction = function(who, ply, action)
             if action then
                 return access[action] or false
             else
-                return access[1] or access[2] or access[3] -- any access check (probably will be removed in future updates, because possible security issue(?))
+                return access[1] or access[2] or access[3]
             end
         end
     end
@@ -149,12 +150,21 @@ if CLIENT then
     net.Receive("proptomia_buddies", function()
         local action = net.ReadUInt(1)
         local steamid = net.ReadString()
+        print(action)
         if action == 0 then
+            local lp_steamid = LocalPlayer():SteamID()
             local phys, tool, prop = net.ReadBool(), net.ReadBool(), net.ReadBool()
+            local _phys, _tool, _prop = phys, tool, prop
+            if proptomia.buddies[steamid] and proptomia.buddies[steamid][lp_steamid] then
+                local access = proptomia.buddies[steamid][lp_steamid]
+                _phys, _tool, _prop = access[1], access[2], access[3]
+            end
             proptomia.buddies[steamid] = {}
-            proptomia.buddies[steamid][LocalPlayer():SteamID()] = {phys, tool, prop}
+            proptomia.buddies[steamid][lp_steamid] = {phys, tool, prop}
+            hook.Run("BuddyAccessChanged", steamid, phys, tool, prop, _phys, _tool, _prop)
         else
             proptomia.buddies[steamid] = nil
+            hook.Run("BuddyAccessChanged", steamid, false, false, false, false, false, false)
         end
     end)
 
