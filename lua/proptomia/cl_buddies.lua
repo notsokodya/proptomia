@@ -10,6 +10,7 @@ local actions = {
     end,
     [1] = function() -- player removed you
         local steamid = net.ReadString()
+        hook.Run("ProptomiaPermissionChange", steamid, false)
         proptomia.buddies[steamid] = nil
     end
 }
