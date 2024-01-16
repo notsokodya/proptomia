@@ -64,7 +64,7 @@ local insert_query = "INSERT INTO proptomia_buddies (steamid, name, physgun, too
 local update_query = "UPDATE proptomia_buddies SET physgun = %d, toolgun = %d, properties = %d WHERE steamid = %s;"
 local remove_query = "DELETE FROM proptomia_buddies WHERE SteamID = %s"
 function proptomia.ChangeBuddyPermission(steamid, name, phys, tool, prop)
-    if name == false then
+    if not (phys or tool or prop) then
         proptomia.clientBuddies[steamid] = nil
         sql.Query(remove_query:format(sql.SQLStr(steamid)))
 
