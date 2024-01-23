@@ -3,7 +3,7 @@ util.AddNetworkString("proptomia_buddies")
 local cooldown = setmetatable({}, {__mode = "kv"})
 local actions = {
     [0] = function(ply, steamid) -- recieveing buddies
-        if cooldown[steamid] > os.time() then return end
+        if cooldown[steamid] and cooldown[steamid] > os.time() then return end
         local count = net.ReadUInt(10) -- yeah, go ahead, add more than 1024 people
 
         if count > 1024 then
@@ -50,14 +50,16 @@ local actions = {
         end
         
         local ply = proptomia.GetPlayerBySteamID(sid)
-        net.Start("proptomia_buddies")
-            net.WriteUInt(0, 1)
+        if IsValid(ply) then
+            net.Start("proptomia_buddies")
+                net.WriteUInt(0, 1)
 
-            net.WriteString(steamid)
-            net.WriteBool(phys)
-            net.WriteBool(tool)
-            net.WriteBool(prop)
-        net.Send(ply)
+                net.WriteString(steamid)
+                net.WriteBool(phys)
+                net.WriteBool(tool)
+                net.WriteBool(prop)
+            net.Send(ply)
+        end
 
         proptomia.LogDebug(_, " changed " .. sid .. " permissions (", phys, ", ", tool, ", ", prop, ")")
     end,
