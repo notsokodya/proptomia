@@ -68,10 +68,12 @@ local actions = {
         
         if proptomia.buddies[steamid] then
             local ply = proptomia.GetPlayerBySteamID(sid)
-            net.Start("proptomia_buddies")
-                net.WriteUInt(1, 1)
-                net.WriteString(steamid)
-            net.Send(ply)
+            if IsValid(ply) then
+                net.Start("proptomia_buddies")
+                    net.WriteUInt(1, 1)
+                    net.WriteString(steamid)
+                net.Send(ply)
+            end
 
             proptomia.buddies[steamid][sid] = nil
             proptomia.LogDebug(_, " removed ", sid, " from buddies")
