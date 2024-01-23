@@ -5,12 +5,12 @@ local actions = {
         local steamid = net.ReadString()
         local phys, tool, prop = net.ReadBool(), net.ReadBool(), net.ReadBool()
 
-        hook.Run("ProptomiaPermissionChange", steamid, phys, tool, prop)
+        hook.Run("ProptomiaPermissionChange", true, steamid, phys, tool, prop)
         proptomia.buddies[steamid] = {phys, tool, prop}
     end,
     [1] = function() -- player removed you
         local steamid = net.ReadString()
-        hook.Run("ProptomiaPermissionChange", steamid, false)
+        hook.Run("ProptomiaPermissionChange", false, steamid)
         proptomia.buddies[steamid] = nil
     end
 }
