@@ -56,15 +56,16 @@ end
 
 proptomia.LogInfo("Loading files...")
 
+include "sh_utils.lua"
 
 if SERVER then
+    AddCSLuaFile "sh_utils.lua"
     AddCSLuaFile "sh_protection.lua"
     AddCSLuaFile "sh_cppi.lua"
     AddCSLuaFile "cl_buddies.lua"
     AddCSLuaFile "cl_owner.lua"
     AddCSLuaFile "cl_visuals.lua"
 
-    include "sv_utils.lua"
     include "sv_owner.lua"
     include "sv_cleanup.lua"
     include "sv_buddies.lua"
