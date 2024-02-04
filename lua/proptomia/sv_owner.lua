@@ -133,12 +133,14 @@ end
 hook.Add("EntityRemoved", "proptomia_owner", proptomia.RemoveOwner)
 
 function proptomia.SendOwnersTo(ply, except_player_props)
-    local props = proptomia.props
+    local props = {}
     if except_player_props then
         local sid = ply:SteamID()
-        for k, v in next, props do
-            if v.SteamID == sid then props[k] = nil end
+        for k, v in next, proptomia.props do
+            if v.SteamID ~= sid then props[k] = v end
         end
+    else
+        props = proptomia.props
     end
 
     if table_Count(props) > 0 then
