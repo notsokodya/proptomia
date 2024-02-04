@@ -24,11 +24,11 @@ hook.Add("HUDPaint", "proptomia_display_owner", function()
         local wep_class = IsValid(wep) and wep:GetClass() or ""
         local action = actions[wep_class]
 
-        local owner = ent:CPPIGetOwner()
+        local owner = proptomia.GetOwner(ent)
         if IsValid(owner) then
             local w, h = ScrW(), ScrH()
             local text_color = proptomia.CanTouch(ent, me, action) and color_green or color_red
-            local text = owner:Name()
+            local text = owner.Name
 
             surface_SetFont("ChatFont")
             local text_w, text_h = surface_GetTextSize(text)
@@ -52,7 +52,6 @@ local notification_permission_change = "%s %s %s permissions"
 local notification_removed = "%s revoked all permissions from you"
 local permission_type = {"physgun", "toolgun", "properties"}
 hook.Add("ProptomiaPermissionChange", "proptomia_notifications", function(action, steamid, phys, tool, prop)
-    print(proptomia.convars.notifications:GetBool())
     if not proptomia.convars.notifications:GetBool() then return end
     local ply = proptomia.GetPlayerBySteamID(steamid)
     local name = IsValid(ply) and ply:Name() or steamid
@@ -84,8 +83,6 @@ hook.Add("ProptomiaPermissionChange", "proptomia_notifications", function(action
             end
         end
 
-        print(what, which, action)
-
         if not what then return end
 
         notification.AddLegacy(notification_permission_change:format(name, what, which), NOTIFY_HINT, 5)
@@ -110,6 +107,11 @@ function PlayerPanel:Init()
     self:SetTall(32)
     self:SetMouseInputEnabled(true)
 
+    self.Avatar = vgui_Create("", self)
+    self.Avatar:Dock(LEFT)
+    self.Avatar:SetSize(32, 32)
+end
+function PlayerPanel:SaveChanges()
     
 end
 
@@ -127,8 +129,12 @@ hook.Add("PopulateToolMenu", "proptomia_menu", function()
         txt:SetFont("DermaDefaultBold")
 
         panel:CheckBox("Toggle displaying entity's owner", "proptomia_display_owner")
+        txt = panel:ControlHelp("Display username of aimed entity's owner")
+        txt:Dock(TOP)
 
         panel:CheckBox("Toggle notifications", "proptomia_notifications")
+        txt = panel:ControlHelp("When someone change your permissions to touch their entity, you get notification about that")
+        txt:Dock(TOP)
     end)
     spawnmenu.AddToolMenuOption("Utilities", "Proptomia", "Permissions", "Permissions", "", "", function(panel)
         panel:Clear()
