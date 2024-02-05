@@ -1,5 +1,5 @@
-local   surface_SetFont, surface_SetTextColor, surface_SetTextPos, surface_GetTextSize, surface_DrawText, player_GetCount, player_GetAll, vgui_Create, vgui_CreateFromTable, LocalPlayer =
-        surface.SetFont, surface.SetTextColor, surface.SetTextPos, surface.GetTextSize, surface.DrawText, player.GetCount, player.GetAll, vgui.Create, vgui.CreateFromTable, LocalPlayer
+local   surface_SetDrawColor, surface_SetFont, surface_SetTextColor, surface_SetTextPos, surface_GetTextSize, surface_SetMaterial, surface_DrawText, surface_DrawTexturedRect, surface_DrawRect, vgui_Create, vgui_CreateFromTable, LocalPlayer, IsValid, player_GetCount, player_GetAll =
+        surface.SetDrawColor, surface.SetFont, surface.SetTextColor, surface.SetTextPos, surface.GetTextSize, surface.SetMaterial, surface.DrawText, surface.DrawTexturedRect, surface.DrawRect, vgui.Create, vgui.CreateFromTable, LocalPlayer, IsValid, player.GetCount, player.GetAll
 
 ----------------- HUD -----------------
 
@@ -25,7 +25,7 @@ hook.Add("HUDPaint", "proptomia_display_owner", function()
         local action = actions[wep_class]
 
         local owner = proptomia.GetOwner(ent)
-        if IsValid(owner) then
+        if owner and owner.SteamID ~= "W" then
             local w, h = ScrW(), ScrH()
             local text_color = proptomia.CanTouch(ent, me, action) and color_green or color_red
             local text = owner.Name
@@ -95,24 +95,135 @@ end)
 
 ----------------- Permissions Panel -----------------
 
-local icons_mark, icons_cross = "icon16/tick.png", "icon16/cross.png"
+local icons_mark, icons_cross = Material("icon16/tick.png"), Material("icon16/cross.png")
 local PlayerPanel = {}
 function PlayerPanel:Init()
-    self.Name = "unknown"
+    self.Name = ""
     self.SteamID = ""
     self.Permissions = {false, false, false}
+
     self:Dock(TOP)
     self:DockMargin(0, 0, 0, 2)
     self:DockPadding(5, 5, 5, 5)
     self:SetTall(32)
     self:SetMouseInputEnabled(true)
 
-    self.Avatar = vgui_Create("", self)
+    self.Avatar = vgui_Create("AvatarImage", self)
     self.Avatar:Dock(LEFT)
-    self.Avatar:SetSize(32, 32)
+    self.Avatar:DockMargin(0, 0, 5, 0)
+    self.Avatar:SetSize(22, 32)
+
+    self.Username = vgui_Create("EditablePanel", self)
+    self.Username:Dock(FILL)
+    self.Username.Paint = function(s, w, h)
+        surface_SetTextColor(color_white)
+        surface_SetFont("ChatFont")
+
+        local text_width, text_height = surface_GetTextSize(self.Name)
+        surface_SetTextPos(0, h / 2 - text_height / 2)
+
+        surface_DrawText(self.Name)
+    end
+
+    self.Properties = vgui_Create("EditablePanel", self)
+    self.Properties:Dock(RIGHT)
+    self.Properties:DockMargin(2, 0, 2, 0)
+    self.Properties:SetSize(22, 32)
+    self.Properties.Paint = function(s, w, h)
+        surface_SetDrawColor(color_white)
+        surface_SetMaterial(self.Permissions[3] and icons_mark or icons_cross)
+        surface_DrawTexturedRect(w * .15, h * .15, w * .75, h * .75)
+    end
+
+    self.Toolgun = vgui_Create("EditablePanel", self)
+    self.Toolgun:Dock(RIGHT)
+    self.Toolgun:DockMargin(2, 0, 2, 0)
+    self.Toolgun:SetSize(22, 32)
+    self.Toolgun.Paint = function(s, w, h)
+        surface_SetDrawColor(color_white)
+        surface_SetMaterial(self.Permissions[2] and icons_mark or icons_cross)
+        surface_DrawTexturedRect(w * .15, h * .15, w * .75, h * .75)
+    end
+
+    self.Physgun = vgui_Create("EditablePanel", self)
+    self.Physgun:Dock(RIGHT)
+    self.Physgun:DockMargin(2, 0, 2, 0)
+    self.Physgun:SetSize(22, 32)
+    self.Physgun.Paint = function(s, w, h)
+        surface_SetDrawColor(color_white)
+        surface_SetMaterial(self.Permissions[1] and icons_mark or icons_cross)
+        surface_DrawTexturedRect(w * .15, h * .15, w * .75, h * .75)
+    end
+end
+function PlayerPanel:Paint(w, h)
+    if self:IsHovered() or self:IsChildHovered() then
+        self:GetSkin().tex.MenuBG_Hover(0, 0, w, h)
+    end
 end
 function PlayerPanel:SaveChanges()
-    
+    if self.SteamID == "" then return end
+
+    local phys, tool, prop = self.Permissions[1], self.Permissions[2], self.Permissions[3]
+    proptomia.ChangeBuddyPermission(self.SteamID, self.Name, phys, tool, prop)
+end
+function PlayerPanel:SetPlayer(steamid, name)
+    self.SteamID = steamid
+    local permissions = proptomia.clientBuddies[steamid]
+
+    if permissions then
+        if not name and permissions[1] ~= steamid then
+            self.Name = permissions[1]
+        end
+
+        self.Permissions[1] = permissions[2]
+        self.Permissions[2] = permissions[3]
+        self.Permissions[3] = permissions[4]
+    end
+
+    if self.Name == "" then
+        self.Name = name or steamid
+    end
+
+    self.Avatar:SetSteamID(util.SteamIDTo64(steamid), 32)
+end
+
+local PlayerPanel = vgui.RegisterTable(PlayerPanel, "EditablePanel")
+
+
+local function proptomia_updateLists()
+    if not IsValid(proptomia.PermissionsPanel) then return end
+
+    local panel = proptomia.PermissionsPanel
+
+    if IsValid(panel.CurrentPlayers) then
+        local currentPlayers = panel.CurrentPlayers
+        currentPlayers:GetCanvas():Clear()
+
+        if player_GetCount() <= 1 then
+            local text = vgui_Create("DLabel")
+            text:Dock(TOP)
+            text:DockPadding(5, 5, 5, 5)
+            text:DockMargin(5, 0, 0, 0)
+            text:SetFont("ChatFont")
+            text:SetText("No one online :<")
+            text:SetTextColor(color_white)
+
+            currentPlayers:AddItem(text)
+        else
+            local lp = LocalPlayer()
+
+            for k, v in next, player_GetAll() do
+                if v == lp then continue end
+
+                local player_panel = vgui_CreateFromTable(PlayerPanel)
+                player_panel:SetPlayer(v:SteamID(), v:Name())
+
+                currentPlayers:AddItem(player_panel)
+            end
+        end
+
+        currentPlayers:Rebuild()
+    end
 end
 
 hook.Add("AddToolMenuCategories", "proptomia_menu_category", function()
@@ -149,15 +260,21 @@ hook.Add("PopulateToolMenu", "proptomia_menu", function()
         list:SetTall(256)
         list:Dock(FILL)
         list:DockMargin(2, 5, 2, 5)
-        panel:AddItem(list)
-        panel.ScrollPanel = list
+        list:GetCanvas().Paint = function(self, w, h)
+            surface_SetDrawColor(0, 0, 0, 75)
+            surface_DrawRect(0, 0, w, h)
+        end
 
-        -- update
+        panel:AddItem(list)
+        panel.CurrentPlayers = list
+
+        proptomia_updateLists()
+
         if not IsValid(proptomia.PermissionsPanel) then proptomia.PermissionsPanel = panel end
     end)
 end)
 hook.Add("SpawnMenuOpen", "proptomia_update_buddies_list", function()
     if IsValid(proptomia.PermissionsPanel) and proptomia.PermissionsPanel:IsVisible()  then
-        -- update
+        proptomia_updateLists()
     end
 end)
