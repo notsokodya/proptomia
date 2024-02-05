@@ -95,7 +95,8 @@ end)
 
 ----------------- Permissions Panel -----------------
 
-local icons_mark, icons_cross = Material("icon16/tick.png"), Material("icon16/cross.png")
+local icons_mark, icons_cross = "icon16/tick.png", "icon16/cross.png"
+local icons_mark_mat, icons_cross_mat = Material("icon16/tick.png"), Material("icon16/cross.png")
 local PlayerPanel = {}
 function PlayerPanel:Init()
     self.Name = ""
@@ -108,6 +109,8 @@ function PlayerPanel:Init()
     self:SetTall(32)
     self:SetMouseInputEnabled(true)
 
+    local onMouseReleased = function(self, code) self:GetParent():OnMouseReleased(code) end
+
     self.Avatar = vgui_Create("AvatarImage", self)
     self.Avatar:Dock(LEFT)
     self.Avatar:DockMargin(0, 0, 5, 0)
@@ -116,7 +119,7 @@ function PlayerPanel:Init()
     self.Username = vgui_Create("EditablePanel", self)
     self.Username:Dock(FILL)
     self.Username.Paint = function(s, w, h)
-        surface_SetTextColor(color_white)
+        surface_SetTextColor(130, 130, 140, 255)
         surface_SetFont("ChatFont")
 
         local text_width, text_height = surface_GetTextSize(self.Name)
@@ -131,7 +134,7 @@ function PlayerPanel:Init()
     self.Properties:SetSize(22, 32)
     self.Properties.Paint = function(s, w, h)
         surface_SetDrawColor(color_white)
-        surface_SetMaterial(self.Permissions[3] and icons_mark or icons_cross)
+        surface_SetMaterial(self.Permissions[3] and icons_mark_mat or icons_cross_mat)
         surface_DrawTexturedRect(w * .15, h * .15, w * .75, h * .75)
     end
 
@@ -141,7 +144,7 @@ function PlayerPanel:Init()
     self.Toolgun:SetSize(22, 32)
     self.Toolgun.Paint = function(s, w, h)
         surface_SetDrawColor(color_white)
-        surface_SetMaterial(self.Permissions[2] and icons_mark or icons_cross)
+        surface_SetMaterial(self.Permissions[2] and icons_mark_mat or icons_cross_mat)
         surface_DrawTexturedRect(w * .15, h * .15, w * .75, h * .75)
     end
 
@@ -151,15 +154,22 @@ function PlayerPanel:Init()
     self.Physgun:SetSize(22, 32)
     self.Physgun.Paint = function(s, w, h)
         surface_SetDrawColor(color_white)
-        surface_SetMaterial(self.Permissions[1] and icons_mark or icons_cross)
+        surface_SetMaterial(self.Permissions[1] and icons_mark_mat or icons_cross_mat)
         surface_DrawTexturedRect(w * .15, h * .15, w * .75, h * .75)
     end
+    
+    self.Avatar.OnMouseReleased = onMouseReleased
+    self.Username.OnMouseReleased = onMouseReleased
+    self.Properties.OnMouseReleased = onMouseReleased
+    self.Toolgun.OnMouseReleased = onMouseReleased
+    self.Physgun.OnMouseReleased = onMouseReleased
 end
 function PlayerPanel:Paint(w, h)
     if self:IsHovered() or self:IsChildHovered() then
         self:GetSkin().tex.MenuBG_Hover(0, 0, w, h)
     end
 end
+
 function PlayerPanel:SaveChanges()
     if self.SteamID == "" then return end
 
@@ -185,6 +195,49 @@ function PlayerPanel:SetPlayer(steamid, name)
     end
 
     self.Avatar:SetSteamID(util.SteamIDTo64(steamid), 32)
+end
+
+function PlayerPanel:OnMouseReleased(code)
+    if code ~= MOUSE_LEFT and code ~= MOUSE_RIGHT then return end
+
+    local player_panel = self
+    local panel = DermaMenu()
+    local permissions = self.Permissions
+
+    local onMouseReleased = function(self, code)
+        DButton.OnMouseReleased(self, code)
+        if self.m_MenuClicking and code == MOUSE_LEFT then self.m_MenuClicking = false end
+    end
+
+    local physgun = panel:AddOption("Physgun")
+    physgun:SetIcon(permissions[1] and icons_mark or icons_cross)
+    function physgun:DoClick()
+        permissions[1] = not permissions[1]
+        self:SetIcon(permissions[1] and icons_mark or icons_cross)
+        player_panel:SaveChanges()
+    end
+
+    local toolgun = panel:AddOption("Toolgun")
+    toolgun:SetIcon(permissions[2] and icons_mark or icons_cross)
+    function toolgun:DoClick()
+        permissions[2] = not permissions[2]
+        self:SetIcon(permissions[2] and icons_mark or icons_cross)
+        player_panel:SaveChanges()
+    end
+
+    local properties = panel:AddOption("Properties")
+    properties:SetIcon(permissions[3] and icons_mark or icons_cross)
+    function properties:DoClick()
+        permissions[3] = not permissions[3]
+        self:SetIcon(permissions[3] and icons_mark or icons_cross)
+        player_panel:SaveChanges()
+    end
+
+    physgun.OnMouseReleased = onMouseReleased
+    toolgun.OnMouseReleased = onMouseReleased
+    properties.OnMouseReleased = onMouseReleased
+
+    panel:Open()
 end
 
 local PlayerPanel = vgui.RegisterTable(PlayerPanel, "EditablePanel")
