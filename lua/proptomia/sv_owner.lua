@@ -1,4 +1,4 @@
-local net_Start, net_WriteUInt, net_WriteString, net_Broadcast, hook_Add, hook_Remove, hook_GetTable, timer_Simple, IsValid, isstring, table_Count, ents_GetAll = 
+local net_Start, net_WriteUInt, net_WriteString, net_Broadcast, hook_Add, hook_Remove, hook_GetTable, timer_Simple, IsValid, isstring, table_Count, ents_GetAll =
       net.Start, net.WriteUInt, net.WriteString, net.Broadcast, hook.Add, hook.Remove, hook.GetTable, timer.Simple, IsValid, isstring, table.Count, ents.GetAll
 util.AddNetworkString "proptomia_ownership"
 
@@ -31,7 +31,7 @@ function proptomia.NetworkOwnership(entIndex)
 end
 
 function proptomia.GetOwner(ent)
-	if not IsValid(ent) then 
+	if not IsValid(ent) then
 		return {
 			Ent = ent,
 			Owner = nil,
@@ -116,7 +116,7 @@ end
 function proptomia.RemoveOwner(ent)
     if not ent then
         proptomia.LogError("RemoveOwner", " Missing entity")
-        return false
+        return
     end
 
     local owner = proptomia.props[ent:EntIndex()]
@@ -126,8 +126,6 @@ function proptomia.RemoveOwner(ent)
 
     proptomia.props[ent:EntIndex()] = nil
     -- proptomia.NetworkOwnership(entIndex) (?)
-
-    return true
 end
 
 hook.Add("EntityRemoved", "proptomia_owner", proptomia.RemoveOwner)
@@ -181,7 +179,7 @@ hook_Add("PlayerInitialSpawn", "proptomia_assign_props", function(ply)
     timer_Simple(2, function()
         if IsValid(ply) then
             proptomia.PlayerInitialized(ply)
-        end 
+        end
     end)
 end)
 
