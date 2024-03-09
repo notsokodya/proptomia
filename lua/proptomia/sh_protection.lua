@@ -10,6 +10,14 @@ function proptomia.CanTouch(ent, ply, action)
     local owner = proptomia.GetOwner(ent)
     if not owner then return end
 
+    if ent:IsPlayer() then
+        if ent:IsSuperAdmin() then
+            return ply:IsSuperAdmin()
+        end
+
+        return ply:IsAdmin()
+    end
+
     local owner_SteamID, ply_SteamID = owner.SteamID, ply:SteamID()
     if owner_SteamID ~= "O" and owner_SteamID ~= ply_SteamID and not proptomia.BuddyAction(owner_SteamID, ply_SteamID, action) then
         return ply:IsAdmin()
@@ -76,7 +84,7 @@ end
 function proptomia.CanProperty(ply, property, ent)
     if proptomia.CanTouch(ent, ply, 3) == false then return false end
 end
- 
+
 hook.Add("PhysgunPickup", "proptomia_protection", proptomia.CanPhysgunPickup)
 hook.Add("OnPhysgunReload", "proptomia_protection", proptomia.CanPhysgunReload)
 hook.Add("CanPlayerUnfreeze", "proptomia_protection", proptomia.CanPlayerUnfreeze)
