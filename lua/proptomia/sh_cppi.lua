@@ -36,8 +36,14 @@ function MetaEntity:CPPISetOwner(ply)
     return proptomia.SetOwner(self, ply)
 end
 function MetaEntity:CPPICanPhysgun(ply)
+    if not proptomia.convars.protection:GetBool() then
+        return true
+    end
     return proptomia.CanPhysgunPickup(ply, self)
 end
 function MetaEntity:CPPICanTool(ply, mode)
+    if not proptomia.convars.protection:GetBool() then
+        return true
+    end
     return proptomia.CanTool(ply, {Entity = self}, mode)
 end
