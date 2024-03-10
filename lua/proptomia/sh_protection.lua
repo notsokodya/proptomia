@@ -10,16 +10,10 @@ function proptomia.CanTouch(ent, ply, action)
     local owner = proptomia.GetOwner(ent)
     if not owner then return end
 
-    if ent:IsPlayer() then
-        if ent:IsSuperAdmin() then
-            return ply:IsSuperAdmin()
-        end
-
-        return ply:IsAdmin()
-    end
-
     local owner_SteamID, ply_SteamID = owner.SteamID, ply:SteamID()
-    if owner_SteamID ~= "O" and owner_SteamID ~= ply_SteamID and not proptomia.BuddyAction(owner_SteamID, ply_SteamID, action) then
+    if owner_SteamID == "W" then
+        return ply:IsSuperAdmin()
+    elseif owner_SteamID ~= "O" and owner_SteamID ~= ply_SteamID and not proptomia.BuddyAction(owner_SteamID, ply_SteamID, action) then
         return ply:IsAdmin()
     end
 
@@ -59,7 +53,6 @@ function proptomia.CanTool(ply, tr, mode, tool, bt)
             for k, v in next, tool.Objects do
                 local tent = v.Ent
                 if IsValid(tent) then
-                    print(tent, proptomia.CanTouch(tent, ply, 2))
                     if proptomia.CanTouch(tent, ply, 2) == false then
                         return false
                     end
