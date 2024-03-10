@@ -70,8 +70,6 @@ function proptomia.CanTool(ply, tr, mode, tool, bt)
     else
         return false
     end
-
-    return true
 end
 
 function proptomia.CanProperty(ply, property, ent)
