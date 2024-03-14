@@ -3,7 +3,7 @@ if SERVER then
 else
     hook.Add("Tick", "proptomia_get_convar", function()
         hook.Remove("Tick", "proptomia_get_convar")
-        proptomia.convars.protection = GetConvar("proptomia_protection")
+        proptomia.convars.protection = GetConVar("proptomia_protection")
     end)
 end
 
