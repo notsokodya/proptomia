@@ -1,7 +1,7 @@
 if SERVER then
     proptomia.convars.protection = CreateConVar("proptomia_protection", "1", {FCVAR_NOTIFY, FCVAR_ARCHIVE, FCVAR_REPLICATED}, "Toggle prop protection", 0, 1)
 else
-    hook.Add("Tick", "proptomia_get_convar". function()
+    hook.Add("Tick", "proptomia_get_convar", function()
         hook.Remove("Tick", "proptomia_get_convar")
         proptomia.convars.protection = GetConvar("proptomia_protection")
     end)
