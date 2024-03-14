@@ -1,4 +1,8 @@
-proptomia.convars.protection = CreateConVar("proptomia_protection", "1", {FCVAR_ARCHIVE, FCVAR_NOTIFY}, "Toggle prop protection", 0, 1)
+if SERVER then
+    proptomia.convars.protection = CreateConVar("proptomia_protection", "1", {FCVAR_NOTIFY, FCVAR_ARCHIVE, FCVAR_REPLICATED}, "Toggle prop protection", 0, 1)
+else
+    proptomia.convars.protection = GetConVar("proptomia_protection")
+end
 
 function proptomia.CanTouch(ent, ply, action)
     if not IsValid(ent)
