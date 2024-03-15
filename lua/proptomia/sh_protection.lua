@@ -1,10 +1,4 @@
-if SERVER then
-    proptomia.convars.protection = CreateConVar("proptomia_protection", "1", {FCVAR_NOTIFY, FCVAR_ARCHIVE, FCVAR_REPLICATED}, "Toggle prop protection", 0, 1)
-else
-    hook.Add("InitPostEntity", "proptomia_GetConvar", function()
-        proptomia.convars.protection = GetConVar("proptomia_protection")
-    end)
-end
+proptomia.convars.protection = CreateConVar("proptomia_protection", "1", {FCVAR_REPLICATED, FCVAR_ARCHIVE, FCVAR_NOTIFY}, "Toggle prop protection", 0, 1)
 
 function proptomia.CanTouch(ent, ply, action)
     if not IsValid(ent)
