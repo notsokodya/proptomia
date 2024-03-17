@@ -42,8 +42,11 @@ function MetaEntity:CPPICanPhysgun(ply)
     return proptomia.CanPhysgunPickup(ply, self)
 end
 function MetaEntity:CPPICanTool(ply, mode)
-    if not proptomia.convars.protection:GetBool() then
-        return true
+    if not proptomia.convars.protection:GetBool() then return true end
+
+    if proptomia.CanTool(ply, {Entity = self}, mode) == false then
+        return false
     end
-    return proptomia.CanTool(ply, {Entity = self}, mode)
+
+    return true
 end
