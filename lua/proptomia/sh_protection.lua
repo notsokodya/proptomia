@@ -81,4 +81,5 @@ hook.Add("OnPhysgunReload", "proptomia_protection", proptomia.CanPhysgunReload)
 hook.Add("CanPlayerUnfreeze", "proptomia_protection", proptomia.CanPlayerUnfreeze)
 hook.Add("OnPhysgunFreeze", "proptomia_protection", proptomia.CanPhysgunFreeze)
 hook.Add("CanTool", "proptomia_protection", proptomia.CanTool)
-hook.Add("CanProperty", "proptomia_protection", proptomia.CanProperty)
+hook.Add("CanEditVariable", "proptomia_protection", function(ent, ply) return proptomia.CanProperty(ply, "editentity", ent) end)
+if SERVER then hook.Add("CanProperty", "proptomia_protection", proptomia.CanProperty) end
