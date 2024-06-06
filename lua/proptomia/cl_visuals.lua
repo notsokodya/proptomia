@@ -12,7 +12,7 @@ local actions = {
 }
 
 hook.Add("HUDPaint", "proptomia_display_owner", function()
-    if not proptomia.convars.displayOwner:GetBool() 
+    if not proptomia.convars.displayOwner:GetBool()
     or not proptomia.convars.protection:GetBool()
     then return end
 
@@ -157,7 +157,7 @@ function PlayerPanel:Init()
         surface_SetMaterial(self.Permissions[1] and icons_mark_mat or icons_cross_mat)
         surface_DrawTexturedRect(w * .15, h * .15, w * .75, h * .75)
     end
-    
+
     self.Avatar.OnMouseReleased = onMouseReleased
     self.Username.OnMouseReleased = onMouseReleased
     self.Properties.OnMouseReleased = onMouseReleased
@@ -286,7 +286,7 @@ hook.Add("PopulateToolMenu", "proptomia_menu", function()
     spawnmenu.AddToolMenuOption("Utilities", "Proptomia", "General", "General", "", "", function(panel)
         panel:Clear()
         panel:SetName("Proptomia > General")
-        
+
         local txt = panel:Help("[ General settings ]")
         txt:Dock(TOP)
         txt:SetContentAlignment(TEXT_ALIGN_CENTER)
@@ -303,7 +303,7 @@ hook.Add("PopulateToolMenu", "proptomia_menu", function()
     spawnmenu.AddToolMenuOption("Utilities", "Proptomia", "Permissions", "Permissions", "", "", function(panel)
         panel:Clear()
         panel:SetName("Proptomia > Permissions")
-        
+
         local txt = panel:Help("[ Permissions settings ]")
         txt:Dock(TOP)
         txt:SetContentAlignment(TEXT_ALIGN_CENTER)
@@ -321,9 +321,9 @@ hook.Add("PopulateToolMenu", "proptomia_menu", function()
         panel:AddItem(list)
         panel.CurrentPlayers = list
 
-        proptomia_updateLists()
-
         if not IsValid(proptomia.PermissionsPanel) then proptomia.PermissionsPanel = panel end
+
+        proptomia_updateLists()
     end)
 end)
 hook.Add("SpawnMenuOpen", "proptomia_update_buddies_list", function()
