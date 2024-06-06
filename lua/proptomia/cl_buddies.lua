@@ -24,41 +24,6 @@ net.Receive("proptomia_buddies", function()
     end
 end)
 
-
-do -- migration (i will delete this at 21.02.2024)
-    local migrating_keys = sql.Query("PRAGMA table_info('proptomia_buddies');")
-    if migrating_keys and migrating_keys[1] and migrating_keys[1].name == "SteamID" then
-        proptomia.LogDebug("Migration started")
-        proptomia.LogWarn("Old table schema detected! Migrating to new one..")
-
-        local values = sql.Query("SELECT * FROM proptomia_buddies;")
-
-        proptomia.LogDebug("Dropping old table")
-        sql.Query("DROP TABLE proptomia_buddies")
-        sql.Query("CREATE TABLE IF NOT EXISTS proptomia_buddies (steamid TEXT, name TEXT, physgun BIT, toolgun BIT, properties BIT);")
-
-        if values then
-            proptomia.LogDebug("Buddies existed in old table, migrating them...")
-            local insert_query = "INSERT INTO proptomia_buddies (steamid, name, physgun, toolgun, properties) VALUES(%s, %s, %d, %d, %d);"
-            local debug_format = "%s [%s] (%d, %d, %d)"
-            for k, v in next, values do
-                proptomia.LogDebug(debug_format:format(v.Name, v.SteamID, v.PhysGun, v.ToolGun, v.Properties))
-                sql.Query(insert_query:format(
-                    sql.SQLStr(v.SteamID),
-                    sql.SQLStr(v.Name),
-                    v.PhysGun,
-                    v.ToolGun,
-                    v.Properties
-                ))
-            end
-        end
-
-        proptomia.LogDebug("Migration done")
-        proptomia.LogWarn("Migration is done!")
-    end
-end
-
-
 sql.Query("CREATE TABLE IF NOT EXISTS proptomia_buddies (steamid TEXT, name TEXT, physgun BIT, toolgun BIT, properties BIT);")
 
 hook.Add("InitPostEntity", "proptomia_buddies", function()
@@ -112,7 +77,7 @@ function proptomia.ChangeBuddyPermission(steamid, name, phys, tool, prop)
     end
 
     proptomia.clientBuddies[steamid] = {name or steamid, phys, tool, prop}
-    
+
     local sql_row_exists = sql.Query("SELECT * FROM proptomia_buddies WHERE steamid = " .. sql.SQLStr(steamid))
     if sql_row_exists then
         sql.Query(update_query:format(
