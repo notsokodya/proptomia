@@ -51,7 +51,7 @@ function proptomia.SetOwner(ent, ply)
         return false
     end
     if not IsValid(ply) or not ply:IsPlayer() then
-        proptomia.LogError("SetOwner", " Bad player entity")
+        proptomia.LogError("SetOwner", " Bad player entity: ", ply)
         return false
     end
 
@@ -320,7 +320,7 @@ function proptomia.OnPropsCleanup()
         local owner = v:CPPIGetOwner()
         if owner and owner:IsWorld() then
             count = count + 1
-        elseif not owner then  
+        elseif not owner then
             proptomia.SetOwnerWorld(v)
             count = count + 1
         end
