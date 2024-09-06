@@ -55,12 +55,6 @@ function proptomia.SetOwner(ent, ply)
         return false
     end
 
-    local current_owner = proptomia.GetOwner(ent)
-    if current_owner and (current_owner.SteamID ~= "O" and current_owner.SteamID ~= ply:SteamID()) then
-        proptomia.LogError("SetOwner", "Changing owner not supported: ", current_owner.SteamID or "nil", " -> ", ply or "ply", " for ", ent or "ent")
-        return false
-    end
-
     local entIndex = ent:EntIndex()
     proptomia.props[entIndex] = {
         Ent = ent,
@@ -76,12 +70,6 @@ end
 function proptomia.SetOwnerWorld(ent)
     if not ent then
         proptomia.LogError("SetOwnerWorld", " Missing entity")
-        return false
-    end
-
-    local current_owner = proptomia.GetOwner(ent)
-    if current_owner and (current_owner.SteamID ~= "O" and current_owner.SteamID ~= "W") then
-        proptomia.LogError("SetOwnerWorld", "Changing owner not supported: ", current_owner.SteamID or "nil", " -> ", "world", " for ", ent or "ent")
         return false
     end
 
