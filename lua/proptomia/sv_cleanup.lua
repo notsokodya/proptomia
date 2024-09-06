@@ -7,13 +7,15 @@ local cleanupEntity = {}
 local function ThinkCleanup()
     local key, value = next(cleanupEntity)
     if not key then hook_Remove("Think", "proptomia_cleanup_props") return end
-    
+
     if IsValid(value.ent) then
+        if value.ent.Destruct then value.ent:Destruct() end
+        value.ent:OnRemove()
         value.ent:Remove()
     end
     cleanupEntity[key] = nil
     proptomia.props[value.id] = nil
-    
+
     local isEmpty = next(cleanupEntity)
     if not isEmpty then
         hook_Remove("Think", "proptomia_cleanup_props")
