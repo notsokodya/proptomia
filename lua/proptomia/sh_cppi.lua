@@ -29,8 +29,6 @@ function MetaEntity:CPPIGetOwner()
     if propInfo then
         return propInfo.Owner, CPPI.CPPI_NOTIMPLEMENTED
     end
-
-    return nil, CPPI.CPPI_NOTIMPLEMENTED
 end
 function MetaEntity:CPPISetOwner(ply)
     return proptomia.SetOwner(self, ply)
