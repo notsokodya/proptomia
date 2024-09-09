@@ -10,7 +10,7 @@ local function ThinkCleanup()
 
     if IsValid(value.ent) then
         if value.ent.Destruct then value.ent:Destruct() end
-        value.ent:OnRemove()
+        if value.ent.OnRemove then value.ent:OnRemove() end
         value.ent:Remove()
     end
     cleanupEntity[key] = nil
