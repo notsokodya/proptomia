@@ -26,9 +26,26 @@ end)
 
 sql.Query("CREATE TABLE IF NOT EXISTS proptomia_buddies (steamid TEXT, name TEXT, physgun BIT, toolgun BIT, properties BIT);")
 
+local insert_query = "INSERT INTO proptomia_buddies (steamid, name, physgun, toolgun, properties) VALUES(%s, %s, %d, %d, %d);"
+local update_query = "UPDATE proptomia_buddies SET physgun = %d, toolgun = %d, properties = %d WHERE steamid = %s;"
+local remove_query = "DELETE FROM proptomia_buddies WHERE steamid = %s;"
+local remove_by_name_query = "DELETE FROM proptomia_buddies WHERE name = %s;"
+
 hook.Add("InitPostEntity", "proptomia_buddies", function()
     local steamid = LocalPlayer():SteamID()
     local buddies = sql.Query("SELECT * FROM proptomia_buddies")
+
+    -- check if table ok
+    for k, row in next, buddies do
+        if not row.steamid and row.name then
+            proptomia.LogError("Buddies has damaged row, removing it -> ", k, row.name)
+            sql.Query(remove_by_name_query:format(row.name))
+            table.remove(buddies, k)
+        elseif not row.steamid and not row.name then
+            proptomia.LogError("Buddies has damaged row -> ", k)
+            table.remove(buddies, k)
+        end
+    end
 
     if buddies and not table.IsEmpty(buddies) then
         net.Start("proptomia_buddies")
@@ -60,10 +77,9 @@ hook.Add("InitPostEntity", "proptomia_buddies", function()
     end
 end)
 
-local insert_query = "INSERT INTO proptomia_buddies (steamid, name, physgun, toolgun, properties) VALUES(%s, %s, %d, %d, %d);"
-local update_query = "UPDATE proptomia_buddies SET physgun = %d, toolgun = %d, properties = %d WHERE steamid = %s;"
-local remove_query = "DELETE FROM proptomia_buddies WHERE SteamID = %s"
 function proptomia.ChangeBuddyPermission(steamid, name, phys, tool, prop)
+    if not steamid then return end
+
     if not (phys or tool or prop) then
         proptomia.clientBuddies[steamid] = nil
         sql.Query(remove_query:format(sql.SQLStr(steamid)))
