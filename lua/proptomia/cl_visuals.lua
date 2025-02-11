@@ -119,8 +119,8 @@ function PlayerPanel:Init()
     self.Username = vgui_Create("EditablePanel", self)
     self.Username:Dock(FILL)
     self.Username.Paint = function(s, w, h)
-        if self.name_color then
-            surface_SetTextColor(self.name_color)
+        if self.NameColor then
+            surface_SetTextColor(self.NameColor)
         else
             surface_SetTextColor(130, 130, 140, 255)
         end
