@@ -1,5 +1,5 @@
-local   surface_SetDrawColor, surface_SetFont, surface_SetTextColor, surface_SetTextPos, surface_GetTextSize, surface_SetMaterial, surface_DrawText, surface_DrawTexturedRect, surface_DrawRect, vgui_Create, vgui_CreateFromTable, LocalPlayer, IsValid, player_GetCount, player_GetAll =
-        surface.SetDrawColor, surface.SetFont, surface.SetTextColor, surface.SetTextPos, surface.GetTextSize, surface.SetMaterial, surface.DrawText, surface.DrawTexturedRect, surface.DrawRect, vgui.Create, vgui.CreateFromTable, LocalPlayer, IsValid, player.GetCount, player.GetAll
+local   surface_SetDrawColor, surface_SetFont, surface_SetTextColor, surface_SetTextPos, surface_GetTextSize, surface_SetMaterial, surface_DrawText, surface_DrawTexturedRect, surface_DrawRect, vgui_Create, vgui_CreateFromTable, LocalPlayer, IsValid, player_GetCount, player_GetAll, team_GetColor =
+        surface.SetDrawColor, surface.SetFont, surface.SetTextColor, surface.SetTextPos, surface.GetTextSize, surface.SetMaterial, surface.DrawText, surface.DrawTexturedRect, surface.DrawRect, vgui.Create, vgui.CreateFromTable, LocalPlayer, IsValid, player.GetCount, player.GetAll, team.GetColor
 
 ----------------- HUD -----------------
 
@@ -119,7 +119,11 @@ function PlayerPanel:Init()
     self.Username = vgui_Create("EditablePanel", self)
     self.Username:Dock(FILL)
     self.Username.Paint = function(s, w, h)
-        surface_SetTextColor(130, 130, 140, 255)
+        if self.name_color then
+            surface_SetTextColor(self.name_color)
+        else
+            surface_SetTextColor(130, 130, 140, 255)
+        end
         surface_SetFont("ChatFont")
 
         local text_width, text_height = surface_GetTextSize(self.Name)
@@ -176,7 +180,7 @@ function PlayerPanel:SaveChanges()
     local phys, tool, prop = self.Permissions[1], self.Permissions[2], self.Permissions[3]
     proptomia.ChangeBuddyPermission(self.SteamID, self.Name, phys, tool, prop)
 end
-function PlayerPanel:SetPlayer(steamid, name)
+function PlayerPanel:SetPlayer(steamid, name, name_color)
     self.SteamID = steamid
     local permissions = proptomia.clientBuddies[steamid]
 
@@ -192,6 +196,10 @@ function PlayerPanel:SetPlayer(steamid, name)
 
     if self.Name == "" then
         self.Name = name or steamid
+    end
+
+    if name_color then
+        self.NameColor = name_color
     end
 
     self.Avatar:SetSteamID(util.SteamIDTo64(steamid), 32)
@@ -269,7 +277,7 @@ local function proptomia_updateLists()
                 if v == lp then continue end
 
                 local player_panel = vgui_CreateFromTable(PlayerPanel)
-                player_panel:SetPlayer(v:SteamID(), v:Name())
+                player_panel:SetPlayer(v:SteamID(), v:Name(), team_GetColor(v:Team()))
 
                 currentPlayers:AddItem(player_panel)
             end
