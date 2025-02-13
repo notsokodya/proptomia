@@ -37,13 +37,16 @@ hook.Add("InitPostEntity", "proptomia_buddies", function()
 
     if not buddies then return end
 
-    -- check if table ok
+    -- check if the buddies table is ok
+    -- im gonna explode, if it will delete good rows (it would be epic fail)
     for k, row in next, buddies do
-        if not row.steamid and row.name then
+        if row.steamid then continue end
+
+        if row.name then
             proptomia.LogError("Buddies has damaged row, removing it -> ", k, row.name)
             sql.Query(remove_by_name_query:format(row.name))
             table.remove(buddies, k)
-        elseif not row.steamid and not row.name then
+        else
             proptomia.LogError("Buddies has damaged row -> ", k)
             table.remove(buddies, k)
         end
