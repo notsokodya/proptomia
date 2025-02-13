@@ -35,6 +35,8 @@ hook.Add("InitPostEntity", "proptomia_buddies", function()
     local steamid = LocalPlayer():SteamID()
     local buddies = sql.Query("SELECT * FROM proptomia_buddies")
 
+    if not buddies then return end
+
     -- check if table ok
     for k, row in next, buddies do
         if not row.steamid and row.name then
@@ -47,7 +49,7 @@ hook.Add("InitPostEntity", "proptomia_buddies", function()
         end
     end
 
-    if buddies and not table.IsEmpty(buddies) then
+    if not table.IsEmpty(buddies) then
         net.Start("proptomia_buddies")
             net.WriteUInt(0, 2)
 
