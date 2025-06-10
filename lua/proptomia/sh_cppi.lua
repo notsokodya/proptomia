@@ -26,7 +26,7 @@ function ENTITY:CPPIGetOwner()
     local ent_owner = proptomia.props[self:EntIndex()]
 
     if ent_owner then
-        return ent_owner.owner, CPPI.CPPI_NOTIMPLEMENTED
+        return IsValid(ent_owner.owner) and ent_owner.owner or nil, CPPI.CPPI_NOTIMPLEMENTED
     end
 end
 
