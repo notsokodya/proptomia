@@ -27,7 +27,7 @@ end
 function MetaEntity:CPPIGetOwner()
     local propInfo = proptomia.props[self:EntIndex()]
     if propInfo then
-        return propInfo.Owner, CPPI.CPPI_NOTIMPLEMENTED
+        return IsValid(propInfo.Owner) and propInfo.Owner or nil, CPPI.CPPI_NOTIMPLEMENTED
     end
 end
 function MetaEntity:CPPISetOwner(ply)
