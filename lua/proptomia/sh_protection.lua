@@ -21,7 +21,7 @@ function proptomia.CanTouch(ent, ply, action)
 end
 
 function proptomia.CanPhysgunPickup(ply, ent)
-    return proptomia.CanTouch(ent, ply, 1)
+    if proptomia.CanTouch(ent, ply, 1) == false then return false end
 end
 
 function proptomia.CanPhysgunReload(_, ply)
